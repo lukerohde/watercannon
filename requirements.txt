@@ -1,0 +1,7 @@
+Flask==3.0.3
+ultralytics
+numpy
+opencv-python
+ipdb
+watchdog
+

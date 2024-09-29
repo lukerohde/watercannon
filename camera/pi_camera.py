@@ -1,33 +1,38 @@
 # camera/pi_camera.py
 
-from picamera.array import PiRGBArray
-from picamera import PiCamera
+from picamera2 import Picamera2
+import numpy as np
+import cv2
 from .base_camera import BaseCamera
+import ipdb
 
 class PiCamera(BaseCamera):
     """
-    Camera implementation for Raspberry Pi.
+    Camera implementation for Raspberry Pi using Picamera2.
     """
 
     def __init__(self):
-        self.camera = PiCamera()
-        self.camera.resolution = (640, 480)
-        self.raw_capture = PiRGBArray(self.camera, size=self.camera.resolution)
-        self.stream = self.camera.capture_continuous(
-            self.raw_capture, format="bgr", use_video_port=True
-        )
+        # Initialize Picamera2
+        self.picam2 = Picamera2()
+        # Configure the camera for a preview stream with the desired resolution
+        self.picam2.configure(self.picam2.create_preview_configuration(main={"size": (640, 480),  "format": "RGB888"}))
+        # Start the camera
+        self.picam2.start()
 
     def frame_generator(self):
         """
         Generator that yields frames from the camera.
         """
-        for f in self.stream:
-            frame = f.array
-            self.raw_capture.truncate(0)
+        frame_count = 0
+        while True:
+            # Capture a frame as a NumPy array
+            frame = self.picam2.capture_array()
+
+            # Print frame count on the same line
+            print(f"Frame count: {frame_count}", end='\r', flush=True)
+            frame_count += 1
+
             yield frame
 
     def release(self):
-        """
-        Release the camera resources.
-        """
-        self.camera.close()
+        self.picam2.stop()

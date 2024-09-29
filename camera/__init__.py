@@ -13,9 +13,9 @@ def get_camera(fake=False, frames=None):
         from .fake_camera import FakeCamera
         return FakeCamera(frames=frames)
     
-    if sys.platform.startswith('linux') and os.uname().machine.startswith('arm'):
-        from .pi_camera import PiCameraImpl
-        return PiCameraImpl()
+    if sys.platform.startswith('linux') and os.uname().machine.startswith('aarch'):
+        from .pi_camera import PiCamera
+        return PiCamera()
     else:
         from .mac_camera import MacCamera
         return MacCamera()

@@ -18,7 +18,4 @@ source venv/bin/activate
 # Install requirements
 pip install -r requirements.txt
 
-# Install PyTorch
-pip install torch torchvision torchaudio
-
 echo "Setup complete for macOS."

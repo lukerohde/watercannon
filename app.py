@@ -1,64 +1,68 @@
 # app.py
 
 from flask import Flask, Response
+from frame_store import FrameStore
+import cv2
+import threading
+
 from camera import get_camera
+from hardware import get_hardware_controller
 from detector import Detector
 from frame_processor import FrameProcessor
-from hardware import get_hardware_controller
 from target_tracker import TargetTracker
-import cv2
+
 
 def create_app(camera, hardware_controller, frame_processor):
-    """
-    Factory function to create and configure the Flask app.
-    Allows injecting fake components for testing.
-    """
+    """Create and configure the Flask app with injected dependencies."""
     app = Flask(__name__)
-    
-    def generate_frames():
-        """
-        Generate frames for streaming, including detection and annotations.
-    
-        Yields:
-            bytes: Encoded frame bytes
-        """
-        frame_gen = camera.frame_generator()
+    frame_store = FrameStore()
+
+    def frame_processing():
+        """Continuously process frames and update the FrameStore."""
         try:
-            for frame in frame_gen:
-                # Process frame and get results
+            for frame in camera.frame_generator():
                 result = frame_processor.process_frame(frame)
-    
-                # Get the annotated frame
                 annotated_frame = result['annotated_frame']
-    
-                # Encode the frame in JPEG format
-                ret, buffer = cv2.imencode('.jpg', annotated_frame)
-                frame_bytes = buffer.tobytes()
-    
-                # Yield the output frame in byte format
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+                frame_store.update(annotated_frame)
         finally:
             camera.release()
-    
+            frame_store.stop()
+
+    threading.Thread(target=frame_processing, daemon=True).start()
+
+    def generate_frames():
+        """Generator that yields the latest frame to clients."""
+        last_timestamp = 0
+        while True:
+            frame, ts = frame_store.get_latest(last_timestamp)
+            if frame is not None:
+                ret, buffer = cv2.imencode('.jpg', frame)
+                if ret:
+                    frame_bytes = buffer.tobytes()
+                    yield (
+                        b'--frame\r\n'
+                        b'Content-Type: image/jpeg\r\n\r\n' +
+                        frame_bytes + b'\r\n'
+                    )
+                    last_timestamp = ts
+            if not frame_store.is_running:
+                break
+
     @app.route('/')
     def index():
-        """
-        Streaming page route.
-        """
+        """Streaming route that serves the video feed."""
         return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-    
+
     return app
 
 if __name__ == '__main__':
-    # Run the Flask app
+    # Initialize dependencies
     camera = get_camera()
     hardware_controller = get_hardware_controller()
-
     detector = Detector(model_name='yolov10n', target_class='bird')
     target_tracker = TargetTracker(fov_horizontal=60, fov_vertical=40)
     frame_processor = FrameProcessor(detector, target_tracker, hardware_controller)
-    
-    app = create_app(camera, hardware_controller, frame_processor)
-    app.run(host='0.0.0.0', port=3000, debug=True)
 
+    # Create and run the Flask app
+    app = create_app(camera, hardware_controller, frame_processor)
+    app.run(host='0.0.0.0', port=3000, debug=True, threaded=True)

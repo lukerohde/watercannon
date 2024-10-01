@@ -1,6 +1,7 @@
 # camera/pi_camera.py
 
 from picamera2 import Picamera2
+from libcamera import Transform
 import numpy as np
 import cv2
 from .base_camera import BaseCamera
@@ -15,7 +16,8 @@ class PiCamera(BaseCamera):
         # Initialize Picamera2
         self.picam2 = Picamera2()
         # Configure the camera for a preview stream with the desired resolution
-        self.picam2.configure(self.picam2.create_preview_configuration(main={"size": (640, 480),  "format": "RGB888"}))
+        config = self.picam2.create_video_configuration(main={"size":(640,480), "format": "RGB888"}, transform=Transform(hflip = True, vflip = False))
+        self.picam2.configure(config)
         # Start the camera
         self.picam2.start()
 

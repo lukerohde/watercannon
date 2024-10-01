@@ -3,8 +3,10 @@
 from flask import Flask, Response
 from frame_store import FrameStore
 import cv2
-import threading
+import time
+import threading 
 
+from camera.fake_camera import FakeCamera
 from camera import get_camera
 from hardware import get_hardware_controller
 from detector import Detector
@@ -21,17 +23,21 @@ def create_app(camera, hardware_controller, frame_processor):
         """Continuously process frames and update the FrameStore."""
         try:
             for frame in camera.frame_generator():
+                #frame_store.update(frame)
                 result = frame_processor.process_frame(frame)
                 annotated_frame = result['annotated_frame']
                 frame_store.update(annotated_frame)
+
         finally:
+            """If the camera runs out of frames or dies let the 
+            FrameStore know the stream has stopped"""
             camera.release()
             frame_store.stop()
 
     threading.Thread(target=frame_processing, daemon=True).start()
 
     def generate_frames():
-        """Generator that yields the latest frame to clients."""
+        """Generator that yields the latest frame from the FrameStore to clients."""
         last_timestamp = 0
         while True:
             frame, ts = frame_store.get_latest(last_timestamp)
@@ -57,6 +63,7 @@ def create_app(camera, hardware_controller, frame_processor):
 
 if __name__ == '__main__':
     # Initialize dependencies
+    # camera = get_camera(fake=True, frames=[FakeCamera.fake_frame])
     camera = get_camera()
     hardware_controller = get_hardware_controller()
     detector = Detector(model_name='yolov10n', target_class='bird')
@@ -65,4 +72,4 @@ if __name__ == '__main__':
 
     # Create and run the Flask app
     app = create_app(camera, hardware_controller, frame_processor)
-    app.run(host='0.0.0.0', port=3000, debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=3000, debug=True, threaded=True, use_reloader=False)

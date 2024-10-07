@@ -4,4 +4,5 @@ numpy
 opencv-python
 ipdb
 watchdog
-
+gpiozero
+rpi-lgpio

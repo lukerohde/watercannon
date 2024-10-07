@@ -13,7 +13,7 @@ def get_hardware_controller(fake=False):
         from .fake_hardware import FakeHardwareController
         return FakeHardwareController()
     
-    if sys.platform.startswith('linux') and os.uname().machine.startswith('arm'):
+    if sys.platform.startswith('linux') and os.uname().machine.startswith('aarch'):
         from .pi_hardware import PiHardwareController
         return PiHardwareController()
     else:

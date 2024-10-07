@@ -29,15 +29,13 @@ class FrameProcessor:
         items = detections['items']
 
         if items != []:
-            target = self.target_tracker.process_detections(items, width, height)
-            self.update_frame(annotated_frame, target)
-            self.hardware_controller.process_signals(target)
+            target_data = self.target_tracker.process_detections(items, width, height)
+            self.update_frame(annotated_frame, target_data)
+            self.hardware_controller.process_signals(target_data)
         else:
-            target = None  # No target detected
+            target_data = None  # No target detected
 
-        return {
-            'annotated_frame': annotated_frame
-        }
+        return annotated_frame
 
     def update_frame(self, frame, data):
         """

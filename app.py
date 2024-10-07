@@ -24,8 +24,7 @@ def create_app(camera, hardware_controller, frame_processor):
         try:
             for frame in camera.frame_generator():
                 #frame_store.update(frame)
-                result = frame_processor.process_frame(frame)
-                annotated_frame = result['annotated_frame']
+                annotated_frame = frame_processor.process_frame(frame)
                 frame_store.update(annotated_frame)
 
         finally:
@@ -33,6 +32,7 @@ def create_app(camera, hardware_controller, frame_processor):
             FrameStore know the stream has stopped"""
             camera.release()
             frame_store.stop()
+            hardware_controller.cleanup()
 
     threading.Thread(target=frame_processing, daemon=True).start()
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # camera = get_camera(fake=True, frames=[FakeCamera.fake_frame])
     camera = get_camera()
     hardware_controller = get_hardware_controller()
-    detector = Detector(model_name='yolov10n', target_class='bird')
+    detector = Detector(model_name='yolov10n', target_class='person')
     target_tracker = TargetTracker(fov_horizontal=60, fov_vertical=40)
     frame_processor = FrameProcessor(detector, target_tracker, hardware_controller)
 

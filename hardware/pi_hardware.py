@@ -1,54 +1,53 @@
 # hardware/pi_hardware.py
-
-import RPi.GPIO as GPIO
-import time
 from .base_hardware import BaseHardwareController
+from gpiozero import Device, AngularServo, OutputDevice
 
 class PiHardwareController(BaseHardwareController):
     """
     Real hardware controller for Raspberry Pi.
     """
 
-    def __init__(self):
-        self.initialize_hardware()
-
-    def initialize_hardware(self):
+    def _initialize_hardware(self):
         """
         Initialize GPIO pins, servos, etc.
         """
-        GPIO.setmode(GPIO.BCM)
-        # Initialize GPIO pins and hardware here
-        # Example:
-        # self.solenoid_pin = 18
-        # GPIO.setup(self.solenoid_pin, GPIO.OUT)
-        pass
+        self.solenoid_pin = 17
+        self.pan_servo_pin = 12
+        self.tilt_servo_pin = 13
 
-    def process_signals(self, signals):
-        """
-        Activate hardware components based on signals.
-        """
-        angle_x = signals.get('angle_x', 0)
-        angle_y = signals.get('angle_y', 0)
-        # Implement hardware control logic here
-        # Example:
-        # self.set_servo_angle(self.pan_servo_pin, angle_x)
-        # self.set_servo_angle(self.tilt_servo_pin, angle_y)
-        # self.activate_solenoid()
-        print(f"Activating hardware with angles: {angle_x}, {angle_y}")
-        pass
+        self.pan_servo = AngularServo(self.pan_servo_pin, min_angle=0, max_angle=self.pan_angle_limit,
+                            min_pulse_width=0.5/1000, max_pulse_width=2.5/1000)
+        self.tilt_servo = AngularServo(self.tilt_servo_pin, min_angle=0, max_angle=self.pan_angle_limit,
+                            min_pulse_width=0.5/1000, max_pulse_width=2.5/1000)
+        self.solenoid_relay = OutputDevice(self.solenoid_pin)
 
-    def activate_solenoid(self):
+        self.relay_on = self.solenoid_relay.value 
+        self.deactivate_solenoid()
+
+
+    def _update_servos(self):
         """
-        Activate the solenoid to squirt water.
+        Update the current angles based on delta.
         """
-        # Example:
-        # GPIO.output(self.solenoid_pin, GPIO.HIGH)
-        # time.sleep(1)
-        # GPIO.output(self.solenoid_pin, GPIO.LOW)
-        pass
+        self.pan_servo.angle = self.pan_angle
+        self.tilt_servo.angle = self.tilt_angle
+
+        print(f"Activating hardware with angles: {self.pan_angle}, {self.tilt_angle}")
+
+    def _toggle_relay(self):
+        self.solenoid_relay.toggle()
+        self.relay_on = self.solenoid_relay.value 
 
     def cleanup(self):
         """
         Clean up GPIO resources.
         """
-        GPIO.cleanup()
+        self.pan_servo.close()
+        self.tilt_servo.close()
+        self.solenoid_relay.close()
+            
+
+
+
+
+

@@ -7,6 +7,9 @@ sudo apt-get upgrade -y
 # Install Python 3 and pip
 sudo apt-get install -y python3 python3-pip python3-venv python3-kms++
 
+# make way for rpi-lgpio on rpi5
+sudo apt remove python3-rpi.gpio
+
 # Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate

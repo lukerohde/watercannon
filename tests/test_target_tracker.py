@@ -49,9 +49,7 @@ class TargetTrackerTestCase(unittest.TestCase):
         # The closest detection is at center, so angles should be 0
         self.assertEqual(tracking_data['angle_x'], 0.0)
         self.assertEqual(tracking_data['angle_y'], 0.0)
-        self.assertEqual(tracking_data['servo_angle_x'], 90.0)
-        self.assertEqual(tracking_data['servo_angle_y'], 90.0)
-
+        
     def test_process_detections_with_offset(self):
         tracker = TargetTracker()
         # Add a detection offset from the center
@@ -63,9 +61,7 @@ class TargetTrackerTestCase(unittest.TestCase):
         expected_angle_y = ((450 - (self.frame_height / 2)) / self.frame_height) * tracker.fov_vertical  # -50 / 1000 * 40 = -2.0
         self.assertAlmostEqual(tracking_data['angle_x'], expected_angle_x)
         self.assertAlmostEqual(tracking_data['angle_y'], expected_angle_y)
-        self.assertEqual(tracking_data['servo_angle_x'], 90.0 + expected_angle_x)
-        self.assertEqual(tracking_data['servo_angle_y'], 90.0 + expected_angle_y)
-
+        
     def test_no_detections(self):
         tracker = TargetTracker()
         tracking_data = tracker.process_detections([], self.frame_width, self.frame_height)

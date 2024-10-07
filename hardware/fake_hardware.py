@@ -6,19 +6,32 @@ class FakeHardwareController(BaseHardwareController):
     """
     Fake hardware controller for testing purposes.
     """
-    def __init__(self):
-        self.activated = False
-        self.signals = None
-
-    def process_signals(self, signals):
+    
+    def _initialize_hardware(self):
         """
-        Simulate hardware activation by storing the signals.
+        Initialize fake hardware components.
         """
-        self.signals = signals
-        self.activated = True
+        self.solenoid_pin = 17
+        self.pan_servo_pin = 12
+        self.tilt_servo_pin = 13
+        self.relay_on = False
+        self.pan_angle = 90
+        self.tilt_angle = 90
+        # No actual hardware initialization
 
+    def _update_servos(self):
+        """
+        Simulate servo angle updates.
+        """
+       
+    def _toggle_relay(self):
+        """
+        Simulate relay toggling.
+        """
+        self.relay_on = not self.relay_on
+        
     def cleanup(self):
         """
-        Fake cleanup method.
+        Simulate cleanup of resources.
         """
-        self.activated = False
+       

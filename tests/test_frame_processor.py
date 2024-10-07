@@ -91,11 +91,9 @@ class FrameProcessorTestCase(unittest.TestCase):
         # ensure nothing was targetted
         self.target_tracker.process_detections.assert_not_called()
         self.hardware_controller.process_signals.assert_not_called()
-        #self.frame_processor.update_frame.assert_not_called()
         
         # Ensure the result contains the original frame
-        self.assertIn('annotated_frame', result)
-        self.assertIsInstance(result['annotated_frame'], np.ndarray)
+        self.assertIsInstance(result, np.ndarray)
 
 
     def test_target_detected(self):

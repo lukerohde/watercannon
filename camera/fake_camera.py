@@ -8,7 +8,11 @@ class FakeCamera(BaseCamera):
     Fake camera implementation for testing purposes.
     """
 
-    fake_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+    def fake_frame():
+        """
+        Class helper method used for testing
+        """
+        return np.zeros((480, 640, 3), dtype=np.uint8)
 
     def __init__(self, frames=None):
         """

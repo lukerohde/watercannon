@@ -1,7 +1,9 @@
-# frame_store.py
+# app/frame_store.py
 
 import threading
 import time
+import cv2 
+
 
 class FrameStore:
     """Thread-safe store for the latest processed frame."""
@@ -25,8 +27,9 @@ class FrameStore:
         with self.condition:
             while self.timestamp <= last_timestamp and self.is_running:
                 self.condition.wait()
-            return self.latest_frame, self.timestamp
 
+            return self.latest_frame, self.timestamp
+            
     def stop(self):
         """Signal that frame processing has stopped."""
         with self.condition:

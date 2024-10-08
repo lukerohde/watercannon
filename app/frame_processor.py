@@ -15,16 +15,11 @@ class FrameProcessor:
    
     def process_frame(self, frame):
         """
-        Process a single frame.
-
-        Args:
-            frame: Input frame.
-
-        Returns:
-            dict: Contains annotated frame.
+        Process a single frame.  This does all the work.  Spot a chicken and sprays it.
         """
-        height, width = frame.shape[:2]
-        detections = self.detector.detect_objects(frame)
+        frame_copy = frame.copy() # this doesn't work and deep copy didn't either (fake_frame was being over written)
+        height, width = frame_copy.shape[:2]
+        detections = self.detector.detect_objects(frame_copy)
         annotated_frame = detections['frame']
         items = detections['items']
 
@@ -40,10 +35,6 @@ class FrameProcessor:
     def update_frame(self, frame, data):
         """
         Draw bounding box, center point, and angle offsets on the frame.
-
-        Args:
-            frame: Frame to draw on.
-            data: Dictionary containing angle and bounding box data.
         """
         x1, y1, x2, y2 = data['box'].values()
         box_center_x, box_center_y = data['box_center'].values()

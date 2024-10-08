@@ -1,7 +1,7 @@
 # test_target_tracker.py
 
 import unittest
-from target_tracker import TargetTracker
+from app.target_tracker import TargetTracker
 
 class TargetTrackerTestCase(unittest.TestCase):
 

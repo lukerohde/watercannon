@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 from unittest.mock import MagicMock
 
-from app import create_app
+from app.main import create_app
 from camera.fake_camera import FakeCamera
 from hardware.fake_hardware import FakeHardwareController
 
@@ -56,6 +56,7 @@ class FlaskAppTestCase(unittest.TestCase):
                 self.assertIsNotNone(image)
                 
                 # Verify that the image matches the fake frame
+                #import ipdb; ipdb.set_trace()
                 self.assertTrue(np.array_equal(image, FakeCamera.fake_frame))
         
 

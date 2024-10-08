@@ -1,7 +1,7 @@
 # app.py
 
 from flask import Flask, Response
-from frame_store import FrameStore
+from app.frame_store import FrameStore
 import cv2
 import time
 import threading 
@@ -9,9 +9,9 @@ import threading
 from camera.fake_camera import FakeCamera
 from camera import get_camera
 from hardware import get_hardware_controller
-from detector import Detector
-from frame_processor import FrameProcessor
-from target_tracker import TargetTracker
+from app.detector import Detector
+from app.frame_processor import FrameProcessor
+from app.target_tracker import TargetTracker
 
 
 def create_app(camera, hardware_controller, frame_processor):
@@ -61,7 +61,7 @@ def create_app(camera, hardware_controller, frame_processor):
 
     return app
 
-if __name__ == '__main__':
+def main():
     # Initialize dependencies
     # camera = get_camera(fake=True, frames=[FakeCamera.fake_frame])
     camera = get_camera()
@@ -73,3 +73,6 @@ if __name__ == '__main__':
     # Create and run the Flask app
     app = create_app(camera, hardware_controller, frame_processor)
     app.run(host='0.0.0.0', port=3000, debug=True, threaded=True, use_reloader=False)
+
+if __name__ == '__main__':
+    main()

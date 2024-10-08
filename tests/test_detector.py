@@ -1,7 +1,7 @@
 import unittest
 import cv2
 import os
-from detector import Detector
+from app.detector import Detector
 import ipdb
 
 class YOLODetectorTestCase(unittest.TestCase):

@@ -32,8 +32,6 @@ class PiHardwareController(BaseHardwareController):
         self.pan_servo.angle = self.pan_angle
         self.tilt_servo.angle = self.tilt_angle
 
-        print(f"Activating hardware with angles: {self.pan_angle}, {self.tilt_angle}")
-
     def _toggle_relay(self):
         self.solenoid_relay.toggle()
         self.relay_on = self.solenoid_relay.value 

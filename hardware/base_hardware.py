@@ -5,7 +5,7 @@ import numpy as np
 
 class BaseHardwareController(ABC):
     """
-    Abstract base class for hardware controllers.
+    Base class for hardware controllers.
     """
 
     def __init__(self):

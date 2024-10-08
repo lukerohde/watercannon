@@ -1,67 +1,11 @@
-# # tests/test_app.py
-
-# import unittest
-# from unittest.mock import MagicMock
-# #import numpy as np
-# import pandas as pd
-# from camera.fake_camera import FakeCamera
-# from hardware.fake_hardware import FakeHardwareController
-
-# # import cv2
-# # from io import BytesIO
-
-# import ipdb
-
-# # Import your Flask app
-# from hardware.fake_hardware import FakeHardwareController
-# from frame_processor import FrameProcessor
-# from target_tracker import TargetTracker
-
-# class FlaskAppTestCase(unittest.TestCase):
-#     def setUp(self):
-        
-#         # Replace real camera and hardware controller with fakes
-#         self.fake_hardware_controller = FakeHardwareController()
-
-#         # Inject fakes into the frame_processor
-#         self.frame_processor = FrameProcessor(
-#             detector=MagicMock(), 
-#             target_tracker=TargetTracker(), 
-#             hardware_controller=self.fake_hardware_controller
-#         )
-
-#     def tearDown(self):
-#         # Reset any state if necessary
-#         self.fake_hardware_controller.cleanup()
-
-#     def test_process_frame(self):
-
-#         # Mock frame_processor to return the fake frame as annotated
-
-#         mock_detection_output = pd.DataFrame({
-#             'xmin': [100],
-#             'ymin': [150],
-#             'xmax': [200],
-#             'ymax': [250],
-#             'confidence': [0.9],
-#             'name': ['bird']
-#         })
-#         self.frame_processor.detector.detect_objects.return_value = mock_detection_output
-        
-#         result = self.frame_processor.process_frame(FakeCamera.fake_frame)
-#         ipdb.set_trace()
-
-# if __name__ == '__main__':
-#     unittest.main()
-
 
 import unittest
 from unittest.mock import MagicMock, patch
 import numpy as np
 import pandas as pd
-from frame_processor import FrameProcessor
-from detector import Detector
-from target_tracker import TargetTracker
+from app.frame_processor import FrameProcessor
+from app.detector import Detector
+from app.target_tracker import TargetTracker
 from hardware.fake_hardware import FakeHardwareController
 from camera.fake_camera import FakeCamera
 import ipdb

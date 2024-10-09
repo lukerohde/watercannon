@@ -10,9 +10,7 @@ class TargetTracker:
     def __init__(self, fov_horizontal=60.0, fov_vertical=40.0):
         self.fov_horizontal = fov_horizontal
         self.fov_vertical = fov_vertical
-        self.servo_angle_x = 90.0  # Assuming center is 90 degrees
-        self.servo_angle_y = 90.0
-
+        
     def process_detections(self, detections, frame_width, frame_height):
         """
         Process detections to update angles.

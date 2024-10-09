@@ -6,3 +6,4 @@ ipdb
 watchdog
 gpiozero
 rpi-lgpio
+adafruit-circuitpython-servokit

@@ -15,7 +15,7 @@ class FrameProcessor:
    
     def process_frame(self, frame):
         """
-        Process a single frame.  This does all the work.  Spot a chicken and sprays it.
+        Process a single frame.  This does all the work.  Spot a chicken and spray it.
         """
         frame_copy = frame.copy() # this doesn't work and deep copy didn't either (fake_frame was being over written)
         height, width = frame_copy.shape[:2]

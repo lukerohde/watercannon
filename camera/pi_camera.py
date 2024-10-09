@@ -16,7 +16,8 @@ class PiCamera(BaseCamera):
         # Initialize Picamera2
         self.picam2 = Picamera2()
         # Configure the camera for a preview stream with the desired resolution
-        config = self.picam2.create_video_configuration(main={"size":(640,480), "format": "RGB888"}, transform=Transform(hflip = True, vflip = False))
+        # "size":(640,480), 
+        config = self.picam2.create_video_configuration(main={"format": "RGB888"}, transform=Transform(hflip = False, vflip = True))
         self.picam2.configure(config)
         # Start the camera
         self.picam2.start()

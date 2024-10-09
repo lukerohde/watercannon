@@ -29,8 +29,8 @@ class BaseHardwareController(ABC):
             angle_x = signals.get('angle_x', 0)
             angle_y = signals.get('angle_y', 0)
             
-            self.pan_angle = np.clip(self.pan_angle + angle_x, 0, self.pan_angle_limit)
-            self.tilt_angle = np.clip(self.tilt_angle + angle_y, 0, self.tilt_angle_limit)
+            self.pan_angle = np.clip(self.pan_angle + angle_x * 0.8, 0, self.pan_angle_limit)
+            self.tilt_angle = np.clip(self.tilt_angle + angle_y * 0.8, 0, self.tilt_angle_limit)
             self._update_servos()
 
             if angle_x < self.activation_threshold_angle and angle_y < self.activation_threshold_angle: 

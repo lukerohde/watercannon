@@ -24,3 +24,6 @@ cp -R /usr/lib/python3/dist-packages/pykms ./venv/lib/python3.11/site-packages/
 pip install picamera2
 
 echo "Setup complete for Raspberry Pi."
+echo "Make sure you have these two lines in your /boot/firmware/config.txt"
+echo "dtparam=i2c_arm=on"
+echo "dtparam=i2c1=on"

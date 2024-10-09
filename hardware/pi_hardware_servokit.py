@@ -1,8 +1,9 @@
 # hardware/pi_hardware.py
 from .base_hardware import BaseHardwareController
-from gpiozero import Device, AngularServo, OutputDevice
+from adafruit_servokit import ServoKit
+from gpiozero import Device, OutputDevice
 
-class PiHardwareController(BaseHardwareController):
+class PiHardwareServoKitController(BaseHardwareController):
     """
     Real hardware controller for Raspberry Pi.
     """
@@ -11,19 +12,18 @@ class PiHardwareController(BaseHardwareController):
         """
         Initialize GPIO pins, servos, etc.
         """
+        self.kit = ServoKit(channels=16)
+        self.pan_servo = self.kit.servo[0]
+        self.tilt_servo = self.kit.servo[1]
+        self.pan_servo.set_pulse_width_range(500, 2500)  # 0.5ms to 2.5ms
+        self.tilt_servo.set_pulse_width_range(500, 2500)
+        self.pan_servo.angle = self.pan_angle
+        self.tilt_servo.angle = self.tilt_angle
+
         self.solenoid_pin = 17
-        self.pan_servo_pin = 12
-        self.tilt_servo_pin = 13
-
-        self.pan_servo = AngularServo(self.pan_servo_pin, min_angle=0, max_angle=self.pan_angle_limit,
-                            min_pulse_width=0.5/1000, max_pulse_width=2.5/1000)
-        self.tilt_servo = AngularServo(self.tilt_servo_pin, min_angle=0, max_angle=self.pan_angle_limit,
-                            min_pulse_width=0.5/1000, max_pulse_width=2.5/1000)
         self.solenoid_relay = OutputDevice(self.solenoid_pin)
-
         self.relay_on = self.solenoid_relay.value 
         self.deactivate_solenoid()
-
 
     def _update_servos(self):
         """

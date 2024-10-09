@@ -14,8 +14,8 @@ def get_hardware_controller(fake=False):
         return FakeHardwareController()
     
     if sys.platform.startswith('linux') and os.uname().machine.startswith('aarch'):
-        from .pi_hardware import PiHardwareController
-        return PiHardwareController()
+        from .pi_hardware_servokit import PiHardwareServoKitController
+        return PiHardwareServoKitController()
     else:
         from .mac_hardware import MacHardwareController
         return MacHardwareController()

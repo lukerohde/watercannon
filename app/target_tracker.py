@@ -78,9 +78,5 @@ class TargetTracker:
     def _calculate_angle(self, offset, frame_dimension, fov):
         """
         Calculate the angle offset from the center.
-
-        Returns:
-            float: The angle offset in degrees.
         """
-        return (offset / frame_dimension) * fov
-
+        return (offset / frame_dimension) * (fov/2) # divided by 2 stops the hunting and works nice.  Not sure why?

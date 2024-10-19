@@ -25,11 +25,13 @@ class FrameProcessor:
 
         if items != []:
             target_data = self.target_tracker.process_detections(items, width, height)
-            self.update_frame(annotated_frame, target_data)
             self.hardware_controller.process_signals(target_data)
+            self.update_frame(annotated_frame, target_data)
         else:
             target_data = None  # No target detected
-
+            self.hardware_controller.patrol()
+        
+        
         return annotated_frame
 
     def update_frame(self, frame, data):
@@ -43,7 +45,10 @@ class FrameProcessor:
 
         # Draw bounding box and center point
         cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
-        cv2.circle(frame, (int(box_center_x), int(box_center_y)), 5, (0, 255, 0), -1)
+        
+        # Set the circle color based on solenoid state
+        circle_color = (0, 0, 255) if data['relay_on'] else (0, 255, 0)  # Red if active, Green if not
+        cv2.circle(frame, (int(box_center_x), int(box_center_y)), 5, circle_color, -1)
 
         # Display angle offsets on the frame
         cv2.putText(frame, f'Angle X: {angle_x:.2f} deg', (10, 30),

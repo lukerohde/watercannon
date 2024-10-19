@@ -33,7 +33,19 @@ class PiCamera(BaseCamera):
             },
             transform=Transform(hflip=False, vflip=True)
         )
+
         self.picam2.configure(config)
+
+        # Set exposure mode to 'night' or 'backlight' to improve dark areas
+        self.picam2.set_controls({"ExposureTime": 10000,  # Example: 10ms exposure
+                                  "AnalogueGain": 2.0,  # Adjust ISO equivalent gain
+                                  "AeEnable": True,     # Enable automatic exposure
+                                  "ExposureValue": 1.0})  # Bias to make image brighter
+
+        # # prioritize the deck (lower half) using ROI
+        # self.picam2.set_controls({
+        #     "ScalerCrop": (0, full_sensor_size[1] // 2, full_sensor_size[0], full_sensor_size[1] // 2)
+        # })
         
         # Start the camera
         self.picam2.start()

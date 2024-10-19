@@ -22,7 +22,9 @@ class PiHardwareServoKitController(BaseHardwareController):
 
         self.solenoid_pin = 17
         self.solenoid_relay = OutputDevice(self.solenoid_pin)
-        self.relay_on = self.solenoid_relay.value 
+        self.solenoid_relay.toggle()
+        
+        self.relay_on = not self.solenoid_relay.value 
         self.deactivate_solenoid()
 
     def _update_servos(self):
@@ -34,14 +36,14 @@ class PiHardwareServoKitController(BaseHardwareController):
 
     def _toggle_relay(self):
         self.solenoid_relay.toggle()
-        self.relay_on = self.solenoid_relay.value 
+        self.relay_on = not self.solenoid_relay.value 
 
     def cleanup(self):
         """
         Clean up GPIO resources.
         """
-        self.pan_servo.close()
-        self.tilt_servo.close()
+        #self.pan_servo.close()
+        #self.tilt_servo.close()
         self.solenoid_relay.close()
             
 

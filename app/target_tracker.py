@@ -14,9 +14,6 @@ class TargetTracker:
     def process_detections(self, detections, frame_width, frame_height):
         """
         Process detections to update angles.
-
-        Returns:
-            dict: Tracking data with angles and bbox info.
         """
         target = self._find_closest_target(detections, frame_width, frame_height)
         if target:
@@ -28,9 +25,6 @@ class TargetTracker:
     def _find_closest_target(self, detections, frame_width, frame_height):
         """
         Find the detection closest to the center of the frame.
-
-        Returns:
-            dict: The detection closest to the center.
         """
         center_x = frame_width / 2
         center_y = frame_height / 2
@@ -51,9 +45,6 @@ class TargetTracker:
     def _calculate_angles(self, detection, frame_width, frame_height):
         """
         Calculate the angle offsets for the target box.
-
-        Returns:
-            dict: Dictionary containing angles and bounding box data.
         """
         box = detection['box']
         x1, y1, x2, y2 = box['x1'], box['y1'], box['x2'], box['y2']

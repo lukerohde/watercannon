@@ -95,8 +95,8 @@ def main():
     # Initialize dependencies
     camera = get_camera()
     hardware_controller = get_hardware_controller()
-    detector = Detector(model_name='yolov10n', target_class='person')
-    target_tracker = TargetTracker(fov_horizontal=62, fov_vertical=49)
+    detector = Detector(model_name='yolov10n', target_classes=['cow', 'bird', 'cat', 'dog'])
+    target_tracker = TargetTracker(fov_horizontal=130, fov_vertical=102)
     frame_processor = FrameProcessor(detector, target_tracker, hardware_controller)
 
     # Instantiate the App

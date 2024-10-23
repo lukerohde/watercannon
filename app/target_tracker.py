@@ -52,8 +52,8 @@ class TargetTracker:
         bbox_center_y = (y1 + y2) / 2
         center_x = frame_width / 2
         center_y = frame_height / 2
-        offset_x = bbox_center_x - center_x
-        offset_y = bbox_center_y - center_y
+        offset_x = center_x - bbox_center_x 
+        offset_y = center_y - bbox_center_y
         angle_x = self._calculate_angle(offset_x, frame_width, self.fov_horizontal)
         angle_y = self._calculate_angle(offset_y, frame_height, self.fov_vertical)
         

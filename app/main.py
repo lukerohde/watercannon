@@ -3,6 +3,7 @@
 from flask import Flask, Response
 import cv2
 import threading
+import time
 
 from camera.fake_camera import FakeCamera
 from camera import get_camera
@@ -11,10 +12,10 @@ from app.detector import Detector
 from app.frame_processor import FrameProcessor
 from app.target_tracker import TargetTracker
 from app.frame_store import FrameStore
-
+from app.temperature_monitor import TemperatureMonitor
 
 class App:
-    def __init__(self, camera, hardware_controller, frame_processor):
+    def __init__(self, camera, hardware_controller, frame_processor, temp_monitor):
         """Initialize the App with injected dependencies."""
         self.camera = camera
         self.hardware_controller = hardware_controller
@@ -23,6 +24,8 @@ class App:
         self.app = Flask(__name__)
         self.thread = None
         self.is_running = False
+        self.temp_monitor = temp_monitor  
+
 
         self._setup_routes()
 
@@ -34,6 +37,7 @@ class App:
     def start_processing(self):
         """Start the frame processing thread."""
         if not self.is_running:
+            self.temp_monitor.start()
             self.thread = threading.Thread(target=self._frame_processing, daemon=True)
             self.thread.start()
             
@@ -42,7 +46,8 @@ class App:
         """Stop the frame processing thread."""
         if self.is_running:
             self.is_running = False
-            self.thread.join()
+            self.temp_monitor.stop()
+            self.thread.join() # Wait for frame processing thread to finish
             self._clean_up()
     
     def _setup_routes(self):
@@ -56,6 +61,8 @@ class App:
         """Generator that yields the latest frame from the FrameStore to clients."""
         last_timestamp = 0
         while True:
+            self.temp_monitor.throttle()
+
             frame, ts = self.frame_store.get_latest(last_timestamp)
             if frame is not None:
                 ret, buffer = cv2.imencode('.jpg', frame)
@@ -67,6 +74,7 @@ class App:
                         frame_bytes + b'\r\n'
                     )
                     last_timestamp = ts
+                
             if not self.frame_store.is_running:
                 break
 
@@ -75,10 +83,14 @@ class App:
         try:
             self.is_running = True
             for frame in self.camera.frame_generator():
+                self.temp_monitor.throttle()
+
                 annotated_frame = self.frame_processor.process_frame(frame)
                 self.frame_store.update(annotated_frame)
+                
                 if not self.is_running:
                     break
+                
             
         finally:
             """If the camera runs out of frames or dies, let the FrameStore know the stream has stopped."""
@@ -98,9 +110,10 @@ def main():
     detector = Detector(model_name='yolov10n', target_classes=['cow', 'bird', 'cat', 'dog'])
     target_tracker = TargetTracker(fov_horizontal=130, fov_vertical=102)
     frame_processor = FrameProcessor(detector, target_tracker, hardware_controller)
+    temp_monitor = TemperatureMonitor(stable_threshold=80, max_threshold=84)
 
     # Instantiate the App
-    app_instance = App(camera, hardware_controller, frame_processor)
+    app_instance = App(camera, hardware_controller, frame_processor, temp_monitor)
 
     # Run the app
     try:

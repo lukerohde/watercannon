@@ -31,7 +31,7 @@ class PiCamera(BaseCamera):
                 'format': 'RGB888',
                 'size': (640, 480)
             },
-            transform=Transform(hflip=False, vflip=True)
+            transform=Transform(hflip=True, vflip=True)
         )
 
         self.picam2.configure(config)

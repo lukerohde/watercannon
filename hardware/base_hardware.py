@@ -17,9 +17,9 @@ class BaseHardwareController(ABC):
         self.pan_angle_low_limit = 0
         self._set_pan_angle(self.pan_angle_home)
         
-        self.tilt_angle_home = 120
-        self.tilt_angle_high_limit = 160
-        self.tilt_angle_low_limit = 80
+        self.tilt_angle_home = 60
+        self.tilt_angle_high_limit = 120
+        self.tilt_angle_low_limit = 20
         self._set_tilt_angle(self.tilt_angle_home)
         
         self.relay_on = False 

@@ -52,3 +52,4 @@ Thumbs.db
 # yolo models
 yolov10n.pt
 
+log.txt

@@ -11,13 +11,14 @@ kit = ServoKit(channels=16)
 # Initialize the servos on channels 0 and 1 (adjust channels as needed)
 servo1 = kit.servo[0]
 servo2 = kit.servo[1]
-
+    
 # Set pulse width range for servos (in microseconds)
 servo1.set_pulse_width_range(500, 2500)  # 0.5ms to 2.5ms
 servo2.set_pulse_width_range(500, 2500)
 
 # Initialize the relay on GPIO pin 17
 relay = OutputDevice(17)
+relay.toggle()
 
 # Initialize angles
 servo1_angle = 90  # Starting angle for servo1

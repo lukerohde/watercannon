@@ -110,7 +110,7 @@ def main():
     detector = Detector(model_name='yolov10n', target_classes=['cow', 'bird', 'cat', 'dog'])
     target_tracker = TargetTracker(fov_horizontal=130, fov_vertical=102)
     frame_processor = FrameProcessor(detector, target_tracker, hardware_controller)
-    temp_monitor = TemperatureMonitor(stable_threshold=78, max_threshold=82)
+    temp_monitor = TemperatureMonitor()
 
     # Instantiate the App
     app_instance = App(camera, hardware_controller, frame_processor, temp_monitor)

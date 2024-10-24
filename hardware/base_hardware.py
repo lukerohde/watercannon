@@ -12,7 +12,7 @@ class BaseHardwareController(ABC):
     def __init__(self):
         # Common configuration
         
-        self.pan_angle_home = 90
+        self.pan_angle_home = 130
         self.pan_angle_high_limit = 180
         self.pan_angle_low_limit = 0
         self._set_pan_angle(self.pan_angle_home)
@@ -41,7 +41,7 @@ class BaseHardwareController(ABC):
             
             self._set_pan_angle(self.pan_angle + angle_x)
             self._set_tilt_angle(self.tilt_angle + angle_y)
-            print(f'Targeting ({self.pan_angle}, {self.tilt_angle})')
+            self._log(f'Targeting ({self.pan_angle}, {self.tilt_angle})')
 
             if abs(angle_x) < self.activation_threshold_angle and abs(angle_y) < self.activation_threshold_angle: 
                 # stop moving and shoot
@@ -52,6 +52,7 @@ class BaseHardwareController(ABC):
 
             signals['relay_on'] = self.relay_on
                 
+
     def patrol(self):
         self.deactivate_solenoid()
         if not self.last_tracking == None and time.time() - self.last_tracking > 5:
@@ -77,6 +78,10 @@ class BaseHardwareController(ABC):
         if self.relay_on:
             self._toggle_relay()
 
+    def _log(self,str):
+        print(str)
+    
+    
     def _set_pan_angle(self, angle):
         self.pan_angle = np.clip(angle, self.pan_angle_low_limit, self.pan_angle_high_limit)
             

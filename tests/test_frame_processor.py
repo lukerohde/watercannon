@@ -45,8 +45,8 @@ class FrameProcessorTestCase(unittest.TestCase):
         mock_detection_output = {
             'frame': FakeCamera.fake_frame(),
             'items': [
-                {'name': 'bird', 'class': 14, 'confidence': 0.75, 'box': {'x1': 900, 'y1': 900, 'x2': 950, 'y2': 950}, 'box_center': {'x': 925, 'y': 925}, 'angle_x': -10, 'angle_y': -10 },  # Center: (925, 925)
-                {'name': 'bird', 'class': 14, 'confidence': 0.85, 'box': {'x1': 490, 'y1': 490, 'x2': 510, 'y2': 510}, 'box_center': {'x': 500, 'y': 500}, 'angle_x': 0, 'angle_y': 0 }      
+                {'name': 'bird', 'class': 14, 'confidence': 0.75, 'box': {'x1': 900, 'y1': 900, 'x2': 950, 'y2': 950}, 'box_center': {'x': 925, 'y': 925}, 'angle_x': -10, 'angle_y': -10, 'relay_on': True },  # Center: (925, 925)
+                {'name': 'bird', 'class': 14, 'confidence': 0.85, 'box': {'x1': 490, 'y1': 490, 'x2': 510, 'y2': 510}, 'box_center': {'x': 500, 'y': 500}, 'angle_x': 0, 'angle_y': 0, 'relay_on': False  }      
             ]
         }
         self.detector.detect_objects.return_value = mock_detection_output

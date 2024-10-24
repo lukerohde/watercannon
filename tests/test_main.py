@@ -18,11 +18,13 @@ class FlaskAppTestCase(unittest.TestCase):
         self.fake_hardware_controller = FakeHardwareController()
         self.frame_processor = MagicMock()
         self.frame_processor.process_frame.return_value = FakeCamera.fake_frame()
+        self.temp_monitor = MagicMock()
         
         self.app_instance = App(
             camera=self.fake_camera,
             hardware_controller=self.fake_hardware_controller,
             frame_processor=self.frame_processor,
+            temp_monitor=self.temp_monitor
         )
         self.app_instance.start_processing()
         self.client = self.app_instance.app.test_client()

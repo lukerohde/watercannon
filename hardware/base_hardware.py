@@ -12,7 +12,7 @@ class BaseHardwareController(ABC):
     def __init__(self):
         # Common configuration
         
-        self.pan_angle_home = 90
+        self.pan_angle_home = 130
         self.pan_angle_high_limit = 180
         self.pan_angle_low_limit = 0
         self._set_pan_angle(self.pan_angle_home)

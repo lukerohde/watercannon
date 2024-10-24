@@ -41,8 +41,8 @@ class TestBaseHardwareController(unittest.TestCase):
     def test_update_servos_exceeding_limits(self):
         signals = {'angle_x': 100, 'angle_y': -100}
         self.controller.process_signals(signals)
-        self.assertEqual(self.controller.pan_angle, 180)  # Clipped to max
-        self.assertEqual(self.controller.tilt_angle, 0)   # Clipped to min
+        self.assertEqual(self.controller.pan_angle, self.controller.pan_angle_high_limit)  # Clipped to max
+        self.assertEqual(self.controller.tilt_angle, self.controller.tilt_angle_low_limit)   # Clipped to min
 
     def test_cleanup(self):
         # This test ensures that cleanup doesn't raise errors

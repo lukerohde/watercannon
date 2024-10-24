@@ -7,7 +7,7 @@ import ipdb
 class YOLODetectorTestCase(unittest.TestCase):
     def setUp(self):
         # Initialize the YOLO detector, targeting 'bird' class
-        self.detector = Detector(model_name='yolov10n.pt', target_class='bird')
+        self.detector = Detector(model_name='yolov10n.pt', target_classes=['bird'])
 
         # Path to the chicken image file
         self.image_path = 'tests/chickens.jpg'

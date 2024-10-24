@@ -17,6 +17,7 @@ class TargetTrackerTestCase(unittest.TestCase):
             {'name': 'bird', 'class': 14, 'confidence': 0.75, 'box': {'x1': 900, 'y1': 900, 'x2': 950, 'y2': 950}},  # Center: (925, 925)
             {'name': 'bird', 'class': 14, 'confidence': 0.85, 'box': {'x1': 490, 'y1': 490, 'x2': 510, 'y2': 510}},   # Center: (500, 500) - Closest
         ]
+        
 
     def test_find_closest_target(self):
         tracker = TargetTracker()
@@ -37,8 +38,8 @@ class TargetTrackerTestCase(unittest.TestCase):
         # Test a detection to the right and above
         detection_right = {'name': 'bird', 'class': 14, 'confidence': 0.90, 'box': {'x1': 600, 'y1': 400, 'x2': 700, 'y2': 500}}  # Center: (650, 450)
         tracking_data = tracker._calculate_angles(detection_right, self.frame_width, self.frame_height)
-        expected_angle_x = ((650 - (self.frame_width / 2)) / self.frame_width) * tracker.fov_horizontal  # 150 / 1000 * 60 = 9.0
-        expected_angle_y = ((450 - (self.frame_height / 2)) / self.frame_height) * tracker.fov_vertical  # -50 / 1000 * 40 = -2.0
+        expected_angle_x = -((650 - (self.frame_width / 2)) / self.frame_width) * tracker.fov_horizontal / 2  # 150 / 1000 * 60 = 9.0 / 2
+        expected_angle_y = -((450 - (self.frame_height / 2)) / self.frame_height) * tracker.fov_vertical / 2  # -50 / 1000 * 40 = -2.0 / 2
         self.assertAlmostEqual(tracking_data['angle_x'], expected_angle_x)
         self.assertAlmostEqual(tracking_data['angle_y'], expected_angle_y)
 
@@ -57,8 +58,8 @@ class TargetTrackerTestCase(unittest.TestCase):
         detections = [offset_detection]
         tracking_data = tracker.process_detections(detections, self.frame_width, self.frame_height)
         self.assertIsNotNone(tracking_data)
-        expected_angle_x = ((650 - (self.frame_width / 2)) / self.frame_width) * tracker.fov_horizontal  # 150 / 1000 * 60 = 9.0
-        expected_angle_y = ((450 - (self.frame_height / 2)) / self.frame_height) * tracker.fov_vertical  # -50 / 1000 * 40 = -2.0
+        expected_angle_x = -((650 - (self.frame_width / 2)) / self.frame_width) * tracker.fov_horizontal / 2  # 150 / 1000 * 60 = 9.0
+        expected_angle_y = -((450 - (self.frame_height / 2)) / self.frame_height) * tracker.fov_vertical / 2 # -50 / 1000 * 40 = -2.0
         self.assertAlmostEqual(tracking_data['angle_x'], expected_angle_x)
         self.assertAlmostEqual(tracking_data['angle_y'], expected_angle_y)
         

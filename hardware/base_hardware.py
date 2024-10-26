@@ -26,26 +26,28 @@ class BaseHardwareController(ABC):
         
          # Scanning pattern configuration
         self.scan_angles = [
-            {'pan': 20, 'tilt': 70},
-            {'pan': 55, 'tilt': 70},
-            {'pan': 80, 'tilt': 75},
-            {'pan': 95, 'tilt': 75},
-            {'pan': 130, 'tilt': 75},
-            {'pan': 130, 'tilt': 75},
-            {'pan': 155, 'tilt': 90}, 
-            {'pan': 155, 'tilt': 90}, 
+            {'pan': 20, 'tilt': 65},
+            {'pan': 55, 'tilt': 65},
+            {'pan': 80, 'tilt': 65},
+            {'pan': 95, 'tilt': 65},
+            {'pan': 130, 'tilt': 70},
+            {'pan': 130, 'tilt': 70},
+            {'pan': 155, 'tilt': 80}, 
+            {'pan': 155, 'tilt': 85}, 
             {'pan': 180, 'tilt': 90},
-            {'pan': 155, 'tilt': 90},
-            {'pan': 130, 'tilt': 75},
-            {'pan': 95, 'tilt': 75},
-            {'pan': 80, 'tilt': 75},
-            {'pan': 55, 'tilt': 70},
-            {'pan': 20, 'tilt': 70},
+            {'pan': 155, 'tilt': 86},
+            {'pan': 130, 'tilt': 70},
+            {'pan': 95, 'tilt': 65},
+            {'pan': 80, 'tilt': 65},
+            {'pan': 55, 'tilt': 65},
+            {'pan': 20, 'tilt': 65},
         ]
         self.scan_target = 0
         self.scan_interval = 1.5
         self.tracking_pause = 5
         self.scan_interval_variation = 0
+        self.pan_variation = 5
+        self.tilt_variation = 3
         self.last_tracking = time.time() - self.tracking_pause
         self.last_scan = time.time() - self.scan_interval
 
@@ -58,6 +60,13 @@ class BaseHardwareController(ABC):
         self.smooth_stop_event = threading.Event()
 
         self.frame_timestamp = time.time()
+
+        # firing event stuff #TODO move this into target tracker (probably)
+        self.firing_events = []
+        self.relay_on_time = None
+        self.cool_down_time = 3
+        self.max_fire_time = 1
+        self.cool_down_till = time.time()
         
         self._initialize_hardware()
 
@@ -82,7 +91,7 @@ class BaseHardwareController(ABC):
             self._log(f'Targeting ({self.pan_angle}, {self.tilt_angle})')
 
             # TODO Move this 'on target' logic to target tracker, so it can aim up
-            if abs(angle_x) < self.activation_threshold_angle and abs(angle_y) < self.activation_threshold_angle: 
+            if self._permitted_to_fire() and abs(angle_x) < self.activation_threshold_angle and abs(angle_y) < self.activation_threshold_angle: 
                 # stop moving and shoot
                 self.activate_solenoid()
             else:
@@ -104,8 +113,8 @@ class BaseHardwareController(ABC):
                 scan_target = self.scan_angles[self.scan_target]
 
                 # Introduce slight random variations to make movement more organic
-                pan_variation = random.uniform(-5, 5)  
-                tilt_variation = random.uniform(-3, 3)
+                pan_variation = random.uniform(-self.pan_variation, self.pan_variation)  
+                tilt_variation = random.uniform(-self.tilt_variation, self.tilt_variation)
 
                 self._smooth_pan(scan_target['pan'] + pan_variation, scan_target['tilt'] + tilt_variation, self.scan_interval)
                 #self._set_pan_angle(scan_target['pan'] + pan_variation)
@@ -118,6 +127,7 @@ class BaseHardwareController(ABC):
         Activate the solenoid to squirt water.
         """
         if not self.relay_on:
+            self.relay_on_time = time.time()
             self._toggle_relay()
     
     def deactivate_solenoid(self):
@@ -126,9 +136,37 @@ class BaseHardwareController(ABC):
         """
         if self.relay_on:
             self._toggle_relay()
+            self._end_fire_event()
 
     def _log(self,str):
         print(str)
+
+    def _end_fire_event(self):
+        fire_time = self._fire_duration()
+        self.firing_events.append({
+            'time': self.relay_on_time,
+            'duration': fire_time
+        })
+        self.relay_on_time = None
+
+    def _fire_duration(self):
+        return time.time() - self.relay_on_time if self.relay_on_time else 0
+
+    def _permitted_to_fire(self):
+        if self._fire_duration() > self.max_fire_time:
+            self.cool_down_till = time.time() + self.cool_down_time
+            return False
+
+        if time.time() < self.cool_down_till:
+            return False
+        
+        if self._person_detected():
+            return False
+
+        return True
+
+    def _person_detected(self):
+        return False
     
     def _set_pan_angle(self, angle):
         self.pan_angle = np.clip(angle, self.pan_angle_low_limit, self.pan_angle_high_limit)

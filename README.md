@@ -48,9 +48,22 @@ Features
 *   **Automated Tracking and Targeting:** Controls a two pan and tilt servos when a chicken is detected
 *   **Automated Spraying:** Controls a solenoid valve to spray water when a chicken is in its sights.
 *   **Multi-Platform Support:** Compatible with both Raspberry Pi and Mac for development and deployment.
-*   **Thread-Safe Frame Processing:** Ensures reliable and efficient processing of video frames.
 *   **Flask Web Server:** Streams processed video to clients, allowing remote monitoring.
+*   **Thread-Safe Frame Processing:** Ensures reliable and efficient processing of video frames.
+*   **Overheat protection:** Throttles the frame rate if the cpu temp is getting too high.
+*   **Sentry mode:** Pan's around a programmable path so nothing can sneak past.
+*   **Sleep mode:** Sleep when it gets too dark, or is covered
+*   **Fire control:** Prevent it spraying too much or if people are in the way
 *   **Testing Support:** Includes fake hardware and camera modules for robust unit testing.
+
+TO DO
+--------
+* Testing of Sleep Mode (inc fixing tests), Smooth Panning and Fire Control
+* Parameterisation of Sentry Mode and Fire Control
+* Refactor of Fire Control so its managed by Targeting and can avoid people
+* Aim up for more accurate and longer range firing
+* Record history of firing events
+* Discriminate between deck chickens and lawn chickens
 
 Hardware
 --------

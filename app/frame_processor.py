@@ -15,7 +15,7 @@ class FrameProcessor:
         self.target_tracker = target_tracker
         self.hardware_controller = hardware_controller
         self.brightness_threshold = 12
-        self.uniformity_threshold = 10
+        self.uniformity_threshold = 25
    
     def process_frame(self, frame):
         """
@@ -38,8 +38,8 @@ class FrameProcessor:
             
             return annotated_frame
         else:
-            time.sleep(10)
             print('sleeping...')
+            time.sleep(10)
             return frame
             
             
@@ -50,7 +50,7 @@ class FrameProcessor:
         average_brightness = np.mean(gray)
         std_dev = np.std(gray)
         
-        if average_brightness < self.brightness_threshold and std_dev < self.uniformity_threshold:
+        if average_brightness < self.brightness_threshold or std_dev < self.uniformity_threshold:
             return False
         else:
             return True

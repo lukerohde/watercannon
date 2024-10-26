@@ -15,8 +15,8 @@ class PiHardwareServoKitController(BaseHardwareController):
         self.kit = ServoKit(channels=16)
         self.pan_servo = self.kit.servo[0]
         self.tilt_servo = self.kit.servo[1]
-        self.pan_servo.set_pulse_width_range(500, 2500)  # 0.5ms to 2.5ms
-        self.tilt_servo.set_pulse_width_range(500, 2500)
+        self.pan_servo.set_pulse_width_range(550, 2600)  # 0.5ms to 2.5ms
+        self.tilt_servo.set_pulse_width_range(550, 2600)
         self.pan_servo.angle = self.pan_angle
         self.tilt_servo.angle = self.tilt_angle
 

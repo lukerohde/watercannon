@@ -13,8 +13,8 @@ servo1 = kit.servo[0]
 servo2 = kit.servo[1]
     
 # Set pulse width range for servos (in microseconds)
-servo1.set_pulse_width_range(500, 2500)  # 0.5ms to 2.5ms
-servo2.set_pulse_width_range(500, 2500)
+servo1.set_pulse_width_range(550, 2600)  # 0.5ms to 2.5ms
+servo2.set_pulse_width_range(550, 2600)
 
 # Initialize the relay on GPIO pin 17
 relay = OutputDevice(17)

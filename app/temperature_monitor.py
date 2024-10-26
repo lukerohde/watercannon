@@ -27,8 +27,8 @@ class TemperatureMonitor:
         
         self.overheat_event = threading.Event()
         self.stop_event = threading.Event()
-        self.thread = threading.Thread(target=self._monitor_temperature, daemon=True)
         self.temp_readings = deque(maxlen=self.moving_avg_readings)  # For moving average
+        self.thread = threading.Thread(target=self._monitor_temperature, daemon=True)
         self.throttle_lock = threading.Lock()
     
 

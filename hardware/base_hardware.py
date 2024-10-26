@@ -3,6 +3,8 @@
 from abc import ABC, abstractmethod
 import numpy as np
 import time
+import random
+import threading
 
 class BaseHardwareController(ABC):
     """
@@ -12,37 +14,70 @@ class BaseHardwareController(ABC):
     def __init__(self):
         # Common configuration
         
-        self.pan_angle_home = 130
         self.pan_angle_high_limit = 180
         self.pan_angle_low_limit = 0
-        self._set_pan_angle(self.pan_angle_home)
         
-        self.tilt_angle_home = 60
         self.tilt_angle_high_limit = 120
         self.tilt_angle_low_limit = 20
-        self._set_tilt_angle(self.tilt_angle_home)
         
         self.relay_on = False 
 
         self.activation_threshold_angle = 2
-        self.last_tracking = None
+        
+         # Scanning pattern configuration
+        self.scan_angles = [
+            {'pan': 20, 'tilt': 70},
+            {'pan': 55, 'tilt': 70},
+            {'pan': 80, 'tilt': 75},
+            {'pan': 95, 'tilt': 75},
+            {'pan': 130, 'tilt': 75},
+            {'pan': 155, 'tilt': 90}, 
+            {'pan': 180, 'tilt': 90},
+            {'pan': 155, 'tilt': 90},
+            {'pan': 130, 'tilt': 75},
+            {'pan': 95, 'tilt': 75},
+            {'pan': 80, 'tilt': 75},
+            {'pan': 55, 'tilt': 70},
+            {'pan': 20, 'tilt': 70},
+        ]
+        self.scan_target = 0
+        self.scan_interval = 1
+        self.scan_interval_variation = 0
+        self.last_tracking = time.time() - self.scan_interval
 
+        self.pan_angle = self.scan_angles[self.scan_target]['pan']
+        self.tilt_angle = self.scan_angles[self.scan_target]['tilt']
+        
+        # Smoothing stuff
+        self.smooth_steps = 30
+        self.smooth_thread = None 
+        self.smooth_stop_event = threading.Event()
+
+        self.frame_timestamp = time.time()
+        
         self._initialize_hardware()
 
     def process_signals(self, signals):
         """
         Activate hardware components based on signals.
         """
+        loop_time = time.time() - self.frame_timestamp
+        self.frame_timestamp = time.time()
+        
         if signals != None: 
             self.last_tracking = time.time()
             
             angle_x = signals.get('angle_x', 0)
             angle_y = signals.get('angle_y', 0)
             
+            #self._smooth_pan(self.pan_angle + angle_x, self.tilt_angle + angle_y, loop_time)
+            self._stop_smooth_pan()
             self._set_pan_angle(self.pan_angle + angle_x)
             self._set_tilt_angle(self.tilt_angle + angle_y)
+            
             self._log(f'Targeting ({self.pan_angle}, {self.tilt_angle})')
 
+            # TODO Move this 'on target' logic to target tracker, so it can aim up
             if abs(angle_x) < self.activation_threshold_angle and abs(angle_y) < self.activation_threshold_angle: 
                 # stop moving and shoot
                 self.activate_solenoid()
@@ -55,14 +90,23 @@ class BaseHardwareController(ABC):
 
     def patrol(self):
         self.deactivate_solenoid()
-        if not self.last_tracking == None and time.time() - self.last_tracking > 5:
-            self.last_tracking = None
-            self._set_pan_angle(self.pan_angle_home)
-            self._set_tilt_angle(self.tilt_angle_home)
-            print(f'Returning home ({self.pan_angle}, {self.tilt_angle})')
-            
-            self._update_servos()
+        if time.time() - self.last_tracking > self.scan_interval: # wait 5 after being on target
+            self.last_tracking = time.time()
+            #scan_target = random.choice(self.scan_angles)
 
+            self.scan_target = (self.scan_target + 1) % len(self.scan_angles)
+            scan_target = self.scan_angles[self.scan_target]
+
+            # Introduce slight random variations to make movement more organic
+            pan_variation = random.uniform(-5, 5)  
+            tilt_variation = random.uniform(-3, 3)
+
+            self._smooth_pan(scan_target['pan'] + pan_variation, scan_target['tilt'] + tilt_variation, self.scan_interval)
+            #self._set_pan_angle(scan_target['pan'] + pan_variation)
+            #self._set_tilt_angle(scan_target['tilt'] + tilt_variation)
+            print(self.pan_angle, self.tilt_angle)
+            self._update_servos()
+            
 
     def activate_solenoid(self):
         """
@@ -81,14 +125,45 @@ class BaseHardwareController(ABC):
     def _log(self,str):
         print(str)
     
-    
     def _set_pan_angle(self, angle):
         self.pan_angle = np.clip(angle, self.pan_angle_low_limit, self.pan_angle_high_limit)
             
 
     def _set_tilt_angle(self, angle):
         self.tilt_angle = np.clip(angle, self.tilt_angle_low_limit, self.tilt_angle_high_limit)
-            
+
+    def _stop_smooth_pan(self):
+        if self.smooth_thread and self.smooth_thread.is_alive():
+            self.smooth_stop_event.set()
+            self.smooth_thread.join()
+            self.smooth_stop_event.clear()
+    
+    def _smooth_pan(self, target_pan_angle, target_tilt_angle, scan_time):
+
+        self._stop_smooth_pan()
+        
+        # Start a new thread for smooth panning
+        self.smooth_thread = threading.Thread(
+            target=self._smooth_pan_handler, 
+            args=(target_pan_angle, target_tilt_angle, scan_time),
+            daemon=True
+        )
+        self.smooth_thread.start()
+
+    def _smooth_pan_handler(self, target_pan_angle, target_tilt_angle, scan_time):
+        step_delay = scan_time / self.smooth_steps
+        step_pan_angle = (target_pan_angle - self.pan_angle) / self.smooth_steps
+        step_tilt_angle = (target_tilt_angle - self.tilt_angle) / self.smooth_steps
+
+        for step in range(1, self.smooth_steps + 3):
+            if self.smooth_stop_event.is_set():
+                break
+            self._set_pan_angle(self.pan_angle + step_pan_angle)
+            self._set_tilt_angle(self.tilt_angle + step_tilt_angle)
+            self._update_servos()
+            #print(self.pan_angle, self.tilt_angle)
+            time.sleep(step_delay)
+        
 
     @abstractmethod
     def _initialize_hardware(self, signals):

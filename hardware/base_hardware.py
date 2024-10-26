@@ -31,6 +31,8 @@ class BaseHardwareController(ABC):
             {'pan': 80, 'tilt': 75},
             {'pan': 95, 'tilt': 75},
             {'pan': 130, 'tilt': 75},
+            {'pan': 130, 'tilt': 75},
+            {'pan': 155, 'tilt': 90}, 
             {'pan': 155, 'tilt': 90}, 
             {'pan': 180, 'tilt': 90},
             {'pan': 155, 'tilt': 90},
@@ -41,9 +43,11 @@ class BaseHardwareController(ABC):
             {'pan': 20, 'tilt': 70},
         ]
         self.scan_target = 0
-        self.scan_interval = 1
+        self.scan_interval = 1.5
+        self.tracking_pause = 5
         self.scan_interval_variation = 0
-        self.last_tracking = time.time() - self.scan_interval
+        self.last_tracking = time.time() - self.tracking_pause
+        self.last_scan = time.time() - self.scan_interval
 
         self.pan_angle = self.scan_angles[self.scan_target]['pan']
         self.tilt_angle = self.scan_angles[self.scan_target]['tilt']
@@ -90,23 +94,24 @@ class BaseHardwareController(ABC):
 
     def patrol(self):
         self.deactivate_solenoid()
-        if time.time() - self.last_tracking > self.scan_interval: # wait 5 after being on target
-            self.last_tracking = time.time()
-            #scan_target = random.choice(self.scan_angles)
+        if time.time() - self.last_tracking > self.tracking_pause: # wait 5 after being on target
+            if time.time() - self.last_scan > self.scan_interval: # wait x before moving to next scan position
+        
+                self.last_scan = time.time()
+                #scan_target = random.choice(self.scan_angles)
 
-            self.scan_target = (self.scan_target + 1) % len(self.scan_angles)
-            scan_target = self.scan_angles[self.scan_target]
+                self.scan_target = (self.scan_target + 1) % len(self.scan_angles)
+                scan_target = self.scan_angles[self.scan_target]
 
-            # Introduce slight random variations to make movement more organic
-            pan_variation = random.uniform(-5, 5)  
-            tilt_variation = random.uniform(-3, 3)
+                # Introduce slight random variations to make movement more organic
+                pan_variation = random.uniform(-5, 5)  
+                tilt_variation = random.uniform(-3, 3)
 
-            self._smooth_pan(scan_target['pan'] + pan_variation, scan_target['tilt'] + tilt_variation, self.scan_interval)
-            #self._set_pan_angle(scan_target['pan'] + pan_variation)
-            #self._set_tilt_angle(scan_target['tilt'] + tilt_variation)
-            print(self.pan_angle, self.tilt_angle)
-            self._update_servos()
-            
+                self._smooth_pan(scan_target['pan'] + pan_variation, scan_target['tilt'] + tilt_variation, self.scan_interval)
+                #self._set_pan_angle(scan_target['pan'] + pan_variation)
+                #self._set_tilt_angle(scan_target['tilt'] + tilt_variation)
+                self._update_servos()
+                
 
     def activate_solenoid(self):
         """
@@ -155,7 +160,7 @@ class BaseHardwareController(ABC):
         step_pan_angle = (target_pan_angle - self.pan_angle) / self.smooth_steps
         step_tilt_angle = (target_tilt_angle - self.tilt_angle) / self.smooth_steps
 
-        for step in range(1, self.smooth_steps + 3):
+        for step in range(0, self.smooth_steps):
             if self.smooth_stop_event.is_set():
                 break
             self._set_pan_angle(self.pan_angle + step_pan_angle)

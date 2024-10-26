@@ -2,6 +2,8 @@
 
 import cv2
 import ipdb
+import numpy as np
+import time
 
 class FrameProcessor:
     """
@@ -12,27 +14,47 @@ class FrameProcessor:
         self.detector = detector
         self.target_tracker = target_tracker
         self.hardware_controller = hardware_controller
+        self.brightness_threshold = 12
+        self.uniformity_threshold = 10
    
     def process_frame(self, frame):
         """
         Process a single frame.  This does all the work.  Spot a chicken and spray it.
         """
-        frame_copy = frame.copy() # this doesn't work and deep copy didn't either (fake_frame was being over written)
-        height, width = frame_copy.shape[:2]
-        detections = self.detector.detect_objects(frame_copy)
-        annotated_frame = detections['frame']
-        items = detections['items']
+        if self.is_interesting(frame):
+            frame_copy = frame.copy() # this doesn't work and deep copy didn't either (fake_frame was being over written)
+            height, width = frame_copy.shape[:2]
+            detections = self.detector.detect_objects(frame_copy)
+            annotated_frame = detections['frame']
+            items = detections['items']
 
-        if items != []:
-            target_data = self.target_tracker.process_detections(items, width, height)
-            self.hardware_controller.process_signals(target_data)
-            self.update_frame(annotated_frame, target_data)
+            if items != []:
+                target_data = self.target_tracker.process_detections(items, width, height)
+                self.hardware_controller.process_signals(target_data)
+                self.update_frame(annotated_frame, target_data)
+            else:
+                target_data = None  # No target detected
+                self.hardware_controller.patrol()
+            
+            return annotated_frame
         else:
-            target_data = None  # No target detected
-            self.hardware_controller.patrol()
+            time.sleep(10)
+            print('sleeping...')
+            return frame
+            
+            
+
+    def is_interesting(self,frame):
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        average_brightness = np.mean(gray)
+        std_dev = np.std(gray)
         
-        
-        return annotated_frame
+        if average_brightness < self.brightness_threshold and std_dev < self.uniformity_threshold:
+            return False
+        else:
+            return True
+
 
     def update_frame(self, frame, data):
         """

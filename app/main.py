@@ -84,9 +84,12 @@ class App:
             self.is_running = True
             for frame in self.camera.frame_generator():
                 self.temp_monitor.throttle()
-
+                
                 annotated_frame = self.frame_processor.process_frame(frame)
                 self.frame_store.update(annotated_frame)
+                
+                if self.frame_processor.fire():
+                    self.frame_store.save()
                 
                 if not self.is_running:
                     break

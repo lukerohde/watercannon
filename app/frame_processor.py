@@ -42,6 +42,8 @@ class FrameProcessor:
             time.sleep(10)
             return frame
             
+    def fire(self):
+        return self.hardware_controller.fired
             
 
     def is_interesting(self,frame):

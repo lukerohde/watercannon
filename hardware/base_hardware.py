@@ -18,7 +18,7 @@ class BaseHardwareController(ABC):
         self.pan_angle_low_limit = 0
         
         self.tilt_angle_high_limit = 120
-        self.tilt_angle_low_limit = 20
+        self.tilt_angle_low_limit = 50
         
         self.relay_on = False 
 
@@ -26,21 +26,23 @@ class BaseHardwareController(ABC):
         
          # Scanning pattern configuration
         self.scan_angles = [
-            {'pan': 20, 'tilt': 65},
-            {'pan': 55, 'tilt': 65},
-            {'pan': 80, 'tilt': 65},
-            {'pan': 95, 'tilt': 65},
-            {'pan': 130, 'tilt': 70},
-            {'pan': 130, 'tilt': 70},
-            {'pan': 155, 'tilt': 80}, 
+            {'pan': 20, 'tilt': 70},
+            {'pan': 55, 'tilt': 70},
+            {'pan': 80, 'tilt': 80},
+            {'pan': 95, 'tilt': 80},
+            {'pan': 115, 'tilt': 70},
+            {'pan': 130, 'tilt': 75},
+            {'pan': 140, 'tilt': 75},
             {'pan': 155, 'tilt': 85}, 
-            {'pan': 180, 'tilt': 90},
+            {'pan': 155, 'tilt': 85}, 
+            {'pan': 160, 'tilt': 90},
             {'pan': 155, 'tilt': 86},
-            {'pan': 130, 'tilt': 70},
-            {'pan': 95, 'tilt': 65},
-            {'pan': 80, 'tilt': 65},
-            {'pan': 55, 'tilt': 65},
-            {'pan': 20, 'tilt': 65},
+            {'pan': 130, 'tilt': 75},
+            {'pan': 115, 'tilt': 70},
+            {'pan': 95, 'tilt': 80},
+            {'pan': 80, 'tilt': 80},
+            {'pan': 55, 'tilt': 70},
+            {'pan': 20, 'tilt': 70},
         ]
         self.scan_target = 0
         self.scan_interval = 1.5
@@ -67,6 +69,7 @@ class BaseHardwareController(ABC):
         self.cool_down_time = 3
         self.max_fire_time = 1
         self.cool_down_till = time.time()
+        self.fired = False
         
         self._initialize_hardware()
 
@@ -76,6 +79,7 @@ class BaseHardwareController(ABC):
         """
         loop_time = time.time() - self.frame_timestamp
         self.frame_timestamp = time.time()
+        self.fired = False
         
         if signals != None: 
             self.last_tracking = time.time()
@@ -94,6 +98,7 @@ class BaseHardwareController(ABC):
             if self._permitted_to_fire() and abs(angle_x) < self.activation_threshold_angle and abs(angle_y) < self.activation_threshold_angle: 
                 # stop moving and shoot
                 self.activate_solenoid()
+                self.fired = True
             else:
                 self._update_servos()
                 self.deactivate_solenoid()

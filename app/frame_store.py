@@ -4,6 +4,7 @@ import threading
 import time
 import cv2 
 from collections import deque
+import os
 
 
 class FrameStore:
@@ -23,6 +24,7 @@ class FrameStore:
         self.saving_stop_event = threading.Event()
         self.save_thread = None
         self.save_lock = threading.Lock()
+        self.video_path = os.path.join(os.path.dirname(__file__), 'videos')
 
 
     def update(self, frame):
@@ -106,9 +108,12 @@ class FrameStore:
         if len(self.video) < 2:
             # need at least two frames for a video
             return
+
+        if not os.path.exists(self.video_path):
+            os.makedirs(self.video_path)
         
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        filename = f"fire_event_{timestamp}.mp4"
+        filename = os.path.join(self.video_path, f"fire_event_{timestamp}.mp4")
         height, width, layers = self.video[0]['frame'].shape
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         out = cv2.VideoWriter(filename, fourcc, self._frame_rate(), (width, height))

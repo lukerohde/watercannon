@@ -1,9 +1,9 @@
 # app/main.py
 
-from flask import Flask, Response
+from flask import Flask, Response, render_template, send_from_directory
 import cv2
 import threading
-import time
+import os
 
 from camera.fake_camera import FakeCamera
 from camera import get_camera
@@ -20,12 +20,11 @@ class App:
         self.camera = camera
         self.hardware_controller = hardware_controller
         self.frame_processor = frame_processor
-        self.frame_store = FrameStore() # I'm deliberately not injecting this, because I have no test isolation yet, and am using my test_main as a mini integration test
+        self.frame_store = FrameStore()
         self.app = Flask(__name__)
         self.thread = None
         self.is_running = False
         self.temp_monitor = temp_monitor  
-
 
         self._setup_routes()
 
@@ -47,16 +46,38 @@ class App:
         if self.is_running:
             self.is_running = False
             self.temp_monitor.stop()
-            self.thread.join() # Wait for frame processing thread to finish
+            self.thread.join()  # Wait for frame processing thread to finish
             self._clean_up()
     
     def _setup_routes(self):
         """Set up Flask routes."""
+        @self.app.route('/video_feed')
+        def video_feed():
+            """Video streaming route. Put this in the src attribute of an img tag."""
+            return Response(self._generate_streaming_frames(),
+                            mimetype='multipart/x-mixed-replace; boundary=frame',
+                            headers={
+                                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                'Pragma': 'no-cache',
+                                'Expires': '0',
+                                'Connection': 'keep-alive'
+                            })
+        
         @self.app.route('/')
         def index():
-            """Streaming route that serves the video feed."""
-            return Response(self._generate_streaming_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-    
+            """Home page with the video stream and list of saved MP4 files."""
+            # List saved MP4 files
+            mp4_directory = self.frame_store.video_path
+            print(mp4_directory)
+            mp4_files = [f for f in os.listdir(mp4_directory) if f.endswith('.mp4')]
+            mp4_files.sort(key=lambda x: os.path.getmtime(os.path.join(mp4_directory, x)), reverse=True)
+            return render_template('index.html', mp4_files=mp4_files)
+        
+        @self.app.route('/videos/<filename>')
+        def download_file(filename):
+            """Serve saved MP4 files."""
+            return send_from_directory('videos', filename)
+
     def _generate_streaming_frames(self):
         """Generator that yields the latest frame from the FrameStore to clients."""
         last_timestamp = 0
@@ -68,13 +89,10 @@ class App:
                 ret, buffer = cv2.imencode('.jpg', frame)
                 if ret:
                     frame_bytes = buffer.tobytes()
-                    yield (
-                        b'--frame\r\n'
-                        b'Content-Type: image/jpeg\r\n\r\n' +
-                        frame_bytes + b'\r\n'
-                    )
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
                     last_timestamp = ts
-                
+
             if not self.frame_store.is_running:
                 break
 
@@ -93,8 +111,7 @@ class App:
                 
                 if not self.is_running:
                     break
-                
-            
+
         finally:
             """If the camera runs out of frames or dies, let the FrameStore know the stream has stopped."""
             self.is_running = False
@@ -111,7 +128,6 @@ def main():
     camera = get_camera()
     hardware_controller = get_hardware_controller()
     detector = Detector(model_name='yolov10n', target_classes=['cow', 'bird', 'cat', 'dog'])
-    #target_tracker = TargetTracker(fov_horizontal=130, fov_vertical=102)
     target_tracker = TargetTracker(fov_horizontal=75, fov_vertical=66)
     frame_processor = FrameProcessor(detector, target_tracker, hardware_controller)
     temp_monitor = TemperatureMonitor()

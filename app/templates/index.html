@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Fire Stream</title>
+    <style>
+        body {
+            background-color: #2e2e2e;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #ff5722;
+            padding: 20px;
+            color: #fff;
+        }
+        h1 {
+            margin: 0;
+        }
+        .video-container {
+            margin: 20px auto;
+            max-width: 800px;
+        }
+        .video-container img {
+            width: 100%;
+            border: 5px solid #ff5722;
+            border-radius: 10px;
+        }
+        .mp4-list {
+            margin: 20px auto;
+            max-width: 800px;
+            text-align: left;
+        }
+        .mp4-list ul {
+            list-style: none;
+            padding: 0;
+        }
+        .mp4-list li {
+            background-color: #3e3e3e;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .mp4-list a {
+            color: #ffab91;
+            text-decoration: none;
+        }
+        .mp4-list a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Live Fire Stream</h1>
+    </header>
+    <div class="video-container">
+        <img src="{{ url_for('video_feed') }}" alt="Live Stream">
+    </div>
+    <div class="mp4-list">
+        <h2>Previous Fire Events</h2>
+        <ul>
+            {% for file in mp4_files %}
+            <li><a href="{{ url_for('download_file', filename=file) }}">{{ file }}</a></li>
+            {% else %}
+            <li>No previous events recorded.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

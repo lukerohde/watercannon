@@ -84,18 +84,18 @@ class BaseHardwareController(ABC):
         if signals != None: 
             self.last_tracking = time.time()
             
-            angle_x = signals.get('angle_x', 0)
-            angle_y = signals.get('angle_y', 0)
+            dx = signals.get('angle_x', 0)
+            dy = signals.get('angle_y', 0)
             
             #self._smooth_pan(self.pan_angle + angle_x, self.tilt_angle + angle_y, loop_time)
             self._stop_smooth_pan()
-            self._set_pan_angle(self.pan_angle + angle_x)
-            self._set_tilt_angle(self.tilt_angle + angle_y)
+            self._set_pan_angle(self.pan_angle + dx)
+            self._set_tilt_angle(self.tilt_angle + dy)
             
             self._log(f'Targeting ({self.pan_angle}, {self.tilt_angle})')
 
             # TODO Move this 'on target' logic to target tracker, so it can aim up
-            if self._permitted_to_fire() and abs(angle_x) < self.activation_threshold_angle and abs(angle_y) < self.activation_threshold_angle: 
+            if self._permitted_to_fire() and self._on_target(dx, dy): 
                 # stop moving and shoot
                 self.activate_solenoid()
                 self.fired = True
@@ -157,6 +157,9 @@ class BaseHardwareController(ABC):
     def _fire_duration(self):
         return time.time() - self.relay_on_time if self.relay_on_time else 0
 
+    def _on_target(self, dx, dy):
+        return abs(dx) < self.activation_threshold_angle and abs(dy) < self.activation_threshold_angle
+    
     def _permitted_to_fire(self):
         if self._fire_duration() > self.max_fire_time:
             self.cool_down_till = time.time() + self.cool_down_time

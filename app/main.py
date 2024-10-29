@@ -68,7 +68,6 @@ class App:
             """Home page with the video stream and list of saved MP4 files."""
             # List saved MP4 files
             mp4_directory = self.frame_store.video_path
-            print(mp4_directory)
             mp4_files = [f for f in os.listdir(mp4_directory) if f.endswith('.mp4')]
             mp4_files.sort(key=lambda x: os.path.getmtime(os.path.join(mp4_directory, x)), reverse=True)
             return render_template('index.html', mp4_files=mp4_files)

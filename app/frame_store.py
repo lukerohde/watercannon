@@ -56,7 +56,8 @@ class FrameStore:
         """Signal that frame processing has stopped."""
         self._stop_saving()
         self.is_running = False
-        self.condition.notify_all()
+        with self.condition: 
+            self.condition.notify_all()
 
     def save(self):
         """

@@ -11,70 +11,69 @@ class FrameProcessor:
     """
 
     def __init__(self, detector, target_tracker, hardware_controller):
-        self.detector = detector
-        self.target_tracker = target_tracker
-        self.hardware_controller = hardware_controller
-        self.brightness_threshold = 12
-        self.uniformity_threshold = 25
+        # config
+        self._detector = detector
+        self._target_tracker = target_tracker
+        self._hardware_controller = hardware_controller
+        self._brightness_threshold = 12
+        self._uniformity_threshold = 25
+        self._frame = None
+
+        # public vars
+        self.annotated_frame = None
    
     def process_frame(self, frame):
         """
         Process a single frame.  This does all the work.  Spot a chicken and spray it.
         """
-        if self.is_interesting(frame):
-            frame_copy = frame.copy() # this doesn't work and deep copy didn't either (fake_frame was being over written)
-            height, width = frame_copy.shape[:2]
-            detections = self.detector.detect_objects(frame_copy)
-            annotated_frame = detections['frame']
-            items = detections['items']
+        self._frame = frame
+        if self.is_interesting():
+            height, width = self._frame.shape[:2]
+            detections = self._detector.detect_objects(self._frame)
+            self.annotated_frame = detections['frame']
 
+            items = detections['items']
             if items != []:
-                target_data = self.target_tracker.process_detections(items, width, height)
-                self.hardware_controller.process_signals(target_data)
-                self.update_frame(annotated_frame, target_data)
+                self._target_tracker.process_detections(items, width, height)
+                self._hardware_controller.process_signals(self._target_tracker)
+                self.update_frame()
             else:
                 target_data = None  # No target detected
-                self.hardware_controller.patrol()
+                self._hardware_controller.patrol()
             
-            return annotated_frame
         else:
             print('sleeping...')
             time.sleep(10)
             return frame
             
     def fire(self):
-        return self.target_tracker.fired
+        return self._target_tracker.fire
              
-    def is_interesting(self,frame):
-
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    def is_interesting(self):
+        
+        gray = cv2.cvtColor(self._frame, cv2.COLOR_BGR2GRAY)
         average_brightness = np.mean(gray)
         std_dev = np.std(gray)
         
-        if average_brightness < self.brightness_threshold or std_dev < self.uniformity_threshold:
+        if average_brightness < self._brightness_threshold or std_dev < self._uniformity_threshold:
             return False
         else:
             return True
 
 
-    def update_frame(self, frame, data):
+    def update_frame(self):
         """
         Draw bounding box, center point, and angle offsets on the frame.
         """
-        x1, y1, x2, y2 = data['box'].values()
-        box_center_x, box_center_y = data['box_center'].values()
-        angle_x = data['dx']
-        angle_y = data['dy']
-
+        t = self._target_tracker 
+        
         # Draw bounding box and center point
-        cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+        cv2.rectangle(self.annotated_frame, (int(t.x1), int(t.y1)), (int(t.x2), int(t.y2)), (0, 255, 0), 2)
         
         # Set the circle color based on solenoid state
-        circle_color = (0, 0, 255) if data['relay_on'] else (0, 255, 0)  # Red if active, Green if not
-        cv2.circle(frame, (int(box_center_x), int(box_center_y)), 5, circle_color, -1)
+        circle_color = (0, 0, 255) if t.fire else (0, 255, 0)  # Red if active, Green if not
+        cv2.circle(self.annotated_frame, (int(t.target_x), int(t.target_y)), 5, circle_color, -1)
 
         # Display angle offsets on the frame
-        cv2.putText(frame, f'Angle X: {angle_x:.2f} deg', (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
-        cv2.putText(frame, f'Angle Y: {angle_y:.2f} deg', (10, 60),
+        cv2.putText(self.annotated_frame, f'DX: {t.dx:.2f} deg, DY: {t.dy:.2f} deg', (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)

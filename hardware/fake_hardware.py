@@ -11,12 +11,9 @@ class FakeHardwareController(BaseHardwareController):
         """
         Initialize fake hardware components.
         """
-        self.solenoid_pin = 17
-        self.pan_servo_pin = 12
-        self.tilt_servo_pin = 13
-        self.relay_on = False
-        self.pan_angle = 90
-        self.tilt_angle = 90
+        self._relay_on = False
+        self._pan_angle = 90
+        self._tilt_angle = 90
         # No actual hardware initialization
 
     def _update_servos(self):
@@ -28,7 +25,7 @@ class FakeHardwareController(BaseHardwareController):
         """
         Simulate relay toggling.
         """
-        self.relay_on = not self.relay_on
+        self._relay_on = not self._relay_on
         
     def cleanup(self):
         """

@@ -12,39 +12,39 @@ class PiHardwareServoKitController(BaseHardwareController):
         """
         Initialize GPIO pins, servos, etc.
         """
-        self.kit = ServoKit(channels=16)
-        self.pan_servo = self.kit.servo[0]
-        self.tilt_servo = self.kit.servo[1]
-        self.pan_servo.set_pulse_width_range(550, 2600)  # 0.5ms to 2.5ms
-        self.tilt_servo.set_pulse_width_range(550, 2600)
-        self.pan_servo.angle = self.pan_angle
-        self.tilt_servo.angle = self.tilt_angle
+        self._kit = ServoKit(channels=16)
+        self._pan_servo = self._kit.servo[0]
+        self._tilt_servo = self._kit.servo[1]
+        self._pan_servo.set_pulse_width_range(550, 2600)  # 0.5ms to 2.5ms
+        self._tilt_servo.set_pulse_width_range(550, 2600)
+        self._pan_servo.angle = self._pan_angle
+        self._tilt_servo.angle = self._tilt_angle
 
-        self.solenoid_pin = 17
-        self.solenoid_relay = OutputDevice(self.solenoid_pin)
-        self.solenoid_relay.toggle()
+        self._solenoid_pin = 17
+        self._solenoid_relay = OutputDevice(self._solenoid_pin)
+        self._solenoid_relay.toggle()
         
-        self.relay_on = not self.solenoid_relay.value 
+        self._relay_on = not self._solenoid_relay.value 
         self.deactivate_solenoid()
 
     def _update_servos(self):
         """
         Update the current angles based on delta.
         """
-        self.pan_servo.angle = self.pan_angle
-        self.tilt_servo.angle = self.tilt_angle
+        self._pan_servo.angle = self._pan_angle
+        self._tilt_servo.angle = self._tilt_angle
 
     def _toggle_relay(self):
-        self.solenoid_relay.toggle()
-        self.relay_on = not self.solenoid_relay.value 
+        self._solenoid_relay.toggle()
+        self._relay_on = not self._solenoid_relay.value 
 
     def cleanup(self):
         """
         Clean up GPIO resources.
         """
-        #self.pan_servo.close()
-        #self.tilt_servo.close()
-        self.solenoid_relay.close()
+        #self._pan_servo.close()
+        #self._tilt_servo.close()
+        self._solenoid_relay.close()
             
 
 

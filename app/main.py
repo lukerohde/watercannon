@@ -102,8 +102,8 @@ class App:
             for frame in self.camera.frame_generator():
                 self.temp_monitor.throttle()
                 
-                annotated_frame = self.frame_processor.process_frame(frame)
-                self.frame_store.update(annotated_frame)
+                self.frame_processor.process_frame(frame)
+                self.frame_store.update(self.frame_processor.annotated_frame)
                 
                 if self.frame_processor.fire():
                     self.frame_store.save()
@@ -126,7 +126,7 @@ def main():
     # Initialize dependencies
     camera = get_camera()
     hardware_controller = get_hardware_controller()
-    detector = Detector(model_name='yolov10n', target_classes=['person', 'cow', 'bird', 'cat', 'dog'])
+    detector = Detector(model_name='yolov10n', target_classes=['cow', 'bird', 'cat', 'dog'])
     target_tracker = TargetTracker(fov_horizontal=75, fov_vertical=66)
     frame_processor = FrameProcessor(detector, target_tracker, hardware_controller)
     temp_monitor = TemperatureMonitor()

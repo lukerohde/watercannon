@@ -8,6 +8,8 @@ from app.detector import Detector
 from app.target_tracker import TargetTracker
 from hardware.fake_hardware import FakeHardwareController
 from camera.fake_camera import FakeCamera
+import cv2
+import os
 import ipdb
 class FrameProcessorTestCase(unittest.TestCase):
     
@@ -30,7 +32,8 @@ class FrameProcessorTestCase(unittest.TestCase):
 
         # Call process_frame
         frame = FakeCamera.fake_frame()
-        result = self.frame_processor.process_frame(frame)
+        self.frame_processor.process_frame(frame)
+        result = self.frame_processor.annotated_frame
 
         # ensure nothing was targetted
         self.target_tracker.process_detections.assert_not_called()
@@ -50,17 +53,40 @@ class FrameProcessorTestCase(unittest.TestCase):
             ]
         }
         self.detector.detect_objects.return_value = mock_detection_output
-        self.target_tracker.process_detections.return_value = mock_detection_output['items'][1]
+        t = TargetTracker()
+        t.x1 = 450
+        t.x2 = 550
+        t.y1 = 450
+        t.y2 = 550
+        t.target_x = 500
+        t.target_y = 500
+        t.dx = 0
+        t.dy = 0
+        t.fire = True
+        self.frame_processor._target_tracker = t
+        
         self.hardware_controller.process_signals.return_value = None
         
         # Call process_frame
         frame = FakeCamera.fake_frame()
-        result = self.frame_processor.process_frame(frame)
+
+        with patch.object(t, 'process_detections') as mock_targeting:
+            self.frame_processor.process_frame(frame)
+            
+            # Assert that signals were sent to the hardware
+            self.hardware_controller.process_signals.assert_called_once()
+
+        # Test frame annotations - suggest saving a fixture file and comparing
+        self.image_path = os.path.join('tests','annotated.png')
         
-        # Assert that signals were sent to the hardware
-        self.hardware_controller.process_signals.assert_called_once()
+        # Uncomment this to update the fixture
+        # cv2.imwrite(os.path.join('tests','annotated.png'), self.frame_processor.annotated_frame)
+        
+        # Load the annotated image
+        frame = cv2.imread(self.image_path)
 
-        # TODO test frame annotations - suggest saving a fixture file and comparing
-
+        # Verify that the image matches the fake frame
+        self.assertTrue(np.array_equal(frame, self.frame_processor.annotated_frame))
+        
 if __name__ == '__main__':
     unittest.main()

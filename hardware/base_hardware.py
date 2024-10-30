@@ -21,8 +21,6 @@ class BaseHardwareController(ABC):
         self.tilt_angle_low_limit = 50
         
         self.relay_on = False 
-
-        self.activation_threshold_angle = 2
         
          # Scanning pattern configuration
         self.scan_angles = [
@@ -62,14 +60,6 @@ class BaseHardwareController(ABC):
         self.smooth_stop_event = threading.Event()
 
         self.frame_timestamp = time.time()
-
-        # firing event stuff #TODO move this into target tracker (probably)
-        self.firing_events = []
-        self.relay_on_time = None
-        self.cool_down_time = 3
-        self.max_fire_time = 1
-        self.cool_down_till = time.time()
-        self.fired = False
         
         self._initialize_hardware()
 
@@ -79,13 +69,12 @@ class BaseHardwareController(ABC):
         """
         loop_time = time.time() - self.frame_timestamp
         self.frame_timestamp = time.time()
-        self.fired = False
         
         if signals != None: 
             self.last_tracking = time.time()
             
-            dx = signals.get('angle_x', 0)
-            dy = signals.get('angle_y', 0)
+            dx = signals.get('dx', 0)
+            dy = signals.get('dy', 0)
             
             #self._smooth_pan(self.pan_angle + angle_x, self.tilt_angle + angle_y, loop_time)
             self._stop_smooth_pan()
@@ -95,10 +84,9 @@ class BaseHardwareController(ABC):
             self._log(f'Targeting ({self.pan_angle}, {self.tilt_angle})')
 
             # TODO Move this 'on target' logic to target tracker, so it can aim up
-            if self._permitted_to_fire() and self._on_target(dx, dy): 
+            if signals.get('fire', 0) == 1: 
                 # stop moving and shoot
                 self.activate_solenoid()
-                self.fired = True
             else:
                 self._update_servos()
                 self.deactivate_solenoid()
@@ -132,7 +120,6 @@ class BaseHardwareController(ABC):
         Activate the solenoid to squirt water.
         """
         if not self.relay_on:
-            self.relay_on_time = time.time()
             self._toggle_relay()
     
     def deactivate_solenoid(self):
@@ -141,45 +128,13 @@ class BaseHardwareController(ABC):
         """
         if self.relay_on:
             self._toggle_relay()
-            self._end_fire_event()
-
+            
     def _log(self,str):
         print(str)
 
-    def _end_fire_event(self):
-        fire_time = self._fire_duration()
-        self.firing_events.append({
-            'time': self.relay_on_time,
-            'duration': fire_time
-        })
-        self.relay_on_time = None
-
-    def _fire_duration(self):
-        return time.time() - self.relay_on_time if self.relay_on_time else 0
-
-    def _on_target(self, dx, dy):
-        return abs(dx) < self.activation_threshold_angle and abs(dy) < self.activation_threshold_angle
-    
-    def _permitted_to_fire(self):
-        if self._fire_duration() > self.max_fire_time:
-            self.cool_down_till = time.time() + self.cool_down_time
-            return False
-
-        if time.time() < self.cool_down_till:
-            return False
-        
-        if self._person_detected():
-            return False
-
-        return True
-
-    def _person_detected(self):
-        return False
-    
     def _set_pan_angle(self, angle):
         self.pan_angle = np.clip(angle, self.pan_angle_low_limit, self.pan_angle_high_limit)
             
-
     def _set_tilt_angle(self, angle):
         self.tilt_angle = np.clip(angle, self.tilt_angle_low_limit, self.tilt_angle_high_limit)
 

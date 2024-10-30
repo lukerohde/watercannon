@@ -32,24 +32,24 @@ class TargetTrackerTestCase(unittest.TestCase):
         detection = self.detections[-1]  # Center at (500, 500)
         tracking_data = tracker._calculate_angles(detection, self.frame_width, self.frame_height)
         # Adjusted expected angles since the center is (500, 500)
-        self.assertAlmostEqual(tracking_data['angle_x'], 0.0)
-        self.assertAlmostEqual(tracking_data['angle_y'], 0.0)
+        self.assertAlmostEqual(tracking_data['dx'], 0.0)
+        self.assertAlmostEqual(tracking_data['dy'], 0.0)
 
         # Test a detection to the right and above
         detection_right = {'name': 'bird', 'class': 14, 'confidence': 0.90, 'box': {'x1': 600, 'y1': 400, 'x2': 700, 'y2': 500}}  # Center: (650, 450)
         tracking_data = tracker._calculate_angles(detection_right, self.frame_width, self.frame_height)
         expected_angle_x = -((650 - (self.frame_width / 2)) / self.frame_width) * tracker.fov_horizontal / 2  # 150 / 1000 * 60 = 9.0 / 2
         expected_angle_y = -((450 - (self.frame_height / 2)) / self.frame_height) * tracker.fov_vertical / 2  # -50 / 1000 * 40 = -2.0 / 2
-        self.assertAlmostEqual(tracking_data['angle_x'], expected_angle_x)
-        self.assertAlmostEqual(tracking_data['angle_y'], expected_angle_y)
+        self.assertAlmostEqual(tracking_data['dx'], expected_angle_x)
+        self.assertAlmostEqual(tracking_data['dy'], expected_angle_y)
 
     def test_process_detections(self):
         tracker = TargetTracker()
         tracking_data = tracker.process_detections(self.detections, self.frame_width, self.frame_height)
         self.assertIsNotNone(tracking_data)
         # The closest detection is at center, so angles should be 0
-        self.assertEqual(tracking_data['angle_x'], 0.0)
-        self.assertEqual(tracking_data['angle_y'], 0.0)
+        self.assertEqual(tracking_data['dx'], 0.0)
+        self.assertEqual(tracking_data['dy'], 0.0)
         
     def test_process_detections_with_offset(self):
         tracker = TargetTracker()
@@ -60,8 +60,8 @@ class TargetTrackerTestCase(unittest.TestCase):
         self.assertIsNotNone(tracking_data)
         expected_angle_x = -((650 - (self.frame_width / 2)) / self.frame_width) * tracker.fov_horizontal / 2  # 150 / 1000 * 60 = 9.0
         expected_angle_y = -((450 - (self.frame_height / 2)) / self.frame_height) * tracker.fov_vertical / 2 # -50 / 1000 * 40 = -2.0
-        self.assertAlmostEqual(tracking_data['angle_x'], expected_angle_x)
-        self.assertAlmostEqual(tracking_data['angle_y'], expected_angle_y)
+        self.assertAlmostEqual(tracking_data['dx'], expected_angle_x)
+        self.assertAlmostEqual(tracking_data['dy'], expected_angle_y)
         
     def test_no_detections(self):
         tracker = TargetTracker()

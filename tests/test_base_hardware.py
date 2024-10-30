@@ -19,26 +19,26 @@ class TestBaseHardwareController(unittest.TestCase):
 
     def test_process_signals_activate_solenoid(self):
         with patch.object(self.controller, '_log', return_value=None) as mock_log:
-            signals = {'angle_x': 1, 'angle_y': 1}  # Below threshold
+            signals = {'dx': 1, 'dy': 1, 'fire': 1}  # Below threshold
             self.controller.process_signals(signals)
             self.assertTrue(self.controller.relay_on)
 
     def test_process_signals_deactivate_solenoid(self):
         with patch.object(self.controller, '_log', return_value=None) as mock_log:        
             # First activate
-            signals = {'angle_x': 1, 'angle_y': 1}
+            signals = {'dx': 1, 'dy': 1, 'fire': 1}
             self.controller.process_signals(signals)
             self.assertTrue(self.controller.relay_on)
 
             # Then deactivate
-            signals = {'angle_x': 3, 'angle_y': 3}  # Above threshold
+            signals = {'dx': 3, 'dy': 3, 'fire': 0}  # Above threshold
             self.controller.process_signals(signals)
             self.assertFalse(self.controller.relay_on)
 
     def test_update_servos_within_limits(self):
         with patch.object(self.controller, '_log', return_value=None) as mock_log:
             
-            signals = {'angle_x': 10, 'angle_y': -10}
+            signals = {'dx': 10, 'dy': -10}
             self.controller.process_signals(signals)
             self.assertEqual(self.controller.pan_angle, 100)
             self.assertEqual(self.controller.tilt_angle, 80)
@@ -46,7 +46,7 @@ class TestBaseHardwareController(unittest.TestCase):
     def test_update_servos_exceeding_limits(self):
         with patch.object(self.controller, '_log', return_value=None) as mock_log:
             
-            signals = {'angle_x': 100, 'angle_y': -100}
+            signals = {'dx': 100, 'dy': -100}
             self.controller.process_signals(signals)
             self.assertEqual(self.controller.pan_angle, self.controller.pan_angle_high_limit)  # Clipped to max
             self.assertEqual(self.controller.tilt_angle, self.controller.tilt_angle_low_limit)   # Clipped to min

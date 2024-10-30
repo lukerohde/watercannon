@@ -43,9 +43,8 @@ class FrameProcessor:
             return frame
             
     def fire(self):
-        return self.hardware_controller.fired
-            
-
+        return self.target_tracker.fired
+             
     def is_interesting(self,frame):
 
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -64,8 +63,8 @@ class FrameProcessor:
         """
         x1, y1, x2, y2 = data['box'].values()
         box_center_x, box_center_y = data['box_center'].values()
-        angle_x = data['angle_x']
-        angle_y = data['angle_y']
+        angle_x = data['dx']
+        angle_y = data['dy']
 
         # Draw bounding box and center point
         cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)

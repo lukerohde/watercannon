@@ -5,6 +5,14 @@ AUTOMATED ANTI-CHICKEN DEVICE
 
 ![Project Logo](path/to/logo.png)
 
+## Demo Video
+
+Check out our demo video below:
+
+[![Watch the video](https://img.youtube.com/vi/aWq80EK-4wA/0.jpg)](https://youtu.be/aWq80EK-4wA)
+
+Click the image above to watch the video on YouTube.
+
 Table of Contents
 -----------------
 
@@ -40,6 +48,7 @@ Overview
 The system leverages a Raspberry Pi 5 for processing and controlling hardware components, providing real-time video streaming via a Flask web server. 
 
 This project is ideal for poultry enthusiasts looking to implement automated solutions for managing their flocks.  It could be adapted to deter cats on benches or barking dogs.  
+
 
 Features
 --------

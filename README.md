@@ -73,7 +73,9 @@ TO DO
 * Aim up for more accurate and longer range firing
 * Discriminate between deck chickens and lawn chickens
 * Mac sure Mac dev is still working (I've bene using vscode remote ssh)
-* Update the parts list to use my newer quiet servos
+* Update readme with schematics
+* Lock down webserver because it needs to be on the net
+
 
 Hardware
 --------
@@ -82,32 +84,34 @@ Hardware
 
 The following items were purchased from [http://core-electronics.com.au](https://core-electronics.com.au)
 
-1.  **FIT0415** - FPV Nylon Pan & Tilt Kit (Without Servo)
+
+1.  **FIT0045** - DF05BB Tilt/Pan Kit (5kg)
 2.  **CE09785** - Raspberry Pi 5 Model B 4GB
-3.  **CE09789** - Raspberry Pi 5 Case, Red/White (Official)
-4.  **CE09791** - Raspberry Pi 5 Active Cooler
-5.  **ADA169** - Micro servo - SG92R (2x)
-6.  **ADA373** - Breadboard-friendly 2.1mm DC barrel jack
-7.  **ADA997** - Plastic Water Solenoid Valve - 12V - 1/2 Nominal
-8.  **FIT0151** - DC Barrel Jack Adapter - Female
-9.  **CE05279** - 5V 4 Channel Relay Module 10A
-10.  **AM8936** - 12V DC 2A Fixed 2.1mm Tip Appliance Plugpack
-11.  **CE04421** - Raspberry Pi Camera Board v2 - 8 Megapixels
+3.  **CE09789** - Raspberry Pi 5 Case, Red/White (Official) It has active cooling
+4.  **CE09791** - (OPTIONAL) Raspberry Pi 5 Active Cooler
+5.  **ADA373** - Breadboard-friendly 2.1mm DC barrel jack
+6.  **ADA997** - Plastic Water Solenoid Valve - 12V - 1/2 Nominal
+7.  **FIT0151** - DC Barrel Jack Adapter - Female
+8.  **CE05114** - 5V 2 Channel Relay Module 10A
+9.  **AM8936** - 12V DC 2A Fixed 2.1mm Tip Appliance Plugpack
+10.  **CE04421** - Raspberry Pi Camera Board v2 - 8 Megapixels - very narrow field of view, needs sentry mode
+11.  **CE07137** - (OPTIONAL) Raspberry Pi Wide Angle Camera Module - distant chickens were too small to detect
 12.  **CE06431** - Micro-HDMI to Standard HDMI 1M Cable
 13.  **CE06486** - Raspberry Pi OS 32GB Preloaded uSD Card
 14.  **CE07064** - Professional Solderless Breadboard BB400 - 400 tie points (Metal Backing Plate)
 15.  **CE07828** - Male Pin Header 2.54mm (1x40)
 16.  **DFR1015** - DC-DC Multi-output Buck Converter (3.3V/5V/9V/12V)
 17.  **CE09777** - Raspberry Pi Camera FPC Adapter Cable 500mm
-18.  **ADA5993** - Adafruit USB Type C Vertical Breakout - Downstream Connection (2x)
+18.  **CE04431** - Raspberry Pi Camera Mount
+19.  **ADA5993** - Adafruit USB Type C Vertical Breakout - Downstream Connection (2x)
+20.  **PCA9685** - 16CH PWM Servo Driver (Core electronics SKU ADA815.This is expensive with no header pins)
 
 **Additional Components:**
 
 *   Female-to-female jumpers
 *   Male-to-female jumpers
 *   Male-to-male jumpers
-*   Jumper wires for the breadboard
-*   **PCA9685** - PWM/Servo Controller to run servos without jitter
+*   22AWG solid core wire for the breadboard, various colors
 
 ### Hardware Breakdown
 
@@ -234,67 +238,23 @@ You can manually run all unit tests using the `unittest` framework:
     
 
 This command discovers and runs all tests in the `tests` directory.
-
-Directory Structure
--------------------
-
-    chicken-tracker/
-    ├── app/
-    │   ├── __init__.py
-    │   ├── detector.py
-    │   ├── frame_processor.py
-    │   ├── frame_store.py
-    │   ├── main.py
-    │   └── target_tracker.py
-    ├── camera/
-    │   ├── __init__.py
-    │   ├── base_camera.py
-    │   ├── fake_camera.py
-    │   ├── mac_camera.py
-    │   └── pi_camera.py
-    ├── hardware/
-    │   ├── __init__.py
-    │   ├── base_hardware.py
-    │   ├── fake_hardware.py
-    │   ├── mac_hardware.py
-    │   ├── pi_hardware_lgpio.py
-    │   └── pi_hardware_servokit.py
-    ├── tests/
-    │   ├── __init__.py
-    │   ├── chicken_deck.jpg
-    │   ├── chicken_missing.jpg
-    │   ├── chickens.jpg
-    │   ├── test_base_hardware.py
-    │   ├── test_detector.py
-    │   ├── test_frame_processor.py
-    │   ├── test_main.py
-    │   └── test_target_tracker.py
-    ├── pi_hardware_test_lgpio.py
-    ├── pi_hardware_test_servokit.py
-    ├── auto_test.py
-    ├── go
-    ├── requirements.txt
-    ├── setup-mac.sh
-    ├── setup-pi.sh
-    ├── start.py
-    └── yolov10n.pt
     
 
 ### Module Descriptions
 
 *   **app/**: Contains the core application logic.
     *   **main.py**: Defines the `App` class that manages the Flask server and frame processing.
-    *   **frame\_store.py**: Manages thread-safe storage of the latest video frames.
+    *   **frame\_store.py**: Manages thread-safe storage of the latest video frames.  Saves video of fire events.
     *   **detector.py**: Handles object detection in video frames.
     *   **frame\_processor.py**: Processes frames for detection and hardware control.
-    *   **target\_tracker.py**: Tracks detected targets within frames.
+    *   **target\_tracker.py**: Tracks detected targets within frames and controls fire.  
 *   **camera/**: Manages camera operations.
     *   **base\_camera.py**: Abstract base class for camera implementations.
     *   **fake\_camera.py**: Provides a fake camera for testing purposes.
     *   **mac\_camera.py**: Simulates camera interactions on Mac.
     *   **pi\_camera.py**: Interfaces with the actual Raspberry Pi camera.
 *   **hardware/**: Controls hardware components.
-    *   **base\_hardware.py**: Abstract base class for hardware controllers.
+    *   **base\_hardware.py**: Abstract base class for hardware controllers.  Handles common hardware actions like panning.  
     *   **fake\_hardware.py**: Simulates hardware for testing.
     *   **mac\_hardware.py**: Simulates hardware interactions on Mac.
     *   **pi\_hardware\_lgpio.py**: Interfaces with hardware using GPIO on Raspberry Pi. This has jitter.

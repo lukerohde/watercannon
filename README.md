@@ -67,11 +67,13 @@ Features
 
 TO DO
 --------
-* Testing of Sleep Mode (inc fixing tests), Smooth Panning and Fire Control, video saving, video serving
-* Parameterisation of Sentry Mode and Fire Control
-* Refactor of Fire Control so its managed by Targeting and can avoid people
+* Testing of Sleep Mode (inc fixing tests), Smooth Panning, video saving and video serving
+* Configurable sentry Mode and Fire Control
+* Avoid people when targeting chickens
 * Aim up for more accurate and longer range firing
 * Discriminate between deck chickens and lawn chickens
+* Mac sure Mac dev is still working (I've bene using vscode remote ssh)
+* Update the parts list to use my newer quiet servos
 
 Hardware
 --------

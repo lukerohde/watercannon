@@ -3,7 +3,7 @@ WATERCANNON - README
 AUTOMATED ANTI-CHICKEN DEVICE
 =============================
 
-![Project Logo](path/to/logo.png)
+![Project Logo](cannon.jpg)
 
 ## Demo Video
 

@@ -38,6 +38,7 @@ class FrameProcessor:
                 self._hardware_controller.process_signals(self._target_tracker)
                 self.update_frame()
             else:
+                self._target_tracker.nothing_detected()
                 target_data = None  # No target detected
                 self._hardware_controller.patrol()
             
@@ -76,4 +77,8 @@ class FrameProcessor:
 
         # Display angle offsets on the frame
         cv2.putText(self.annotated_frame, f'DX: {t.dx:.2f} deg, DY: {t.dy:.2f} deg', (10, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
+
+        # Display angle offsets on the frame
+        cv2.putText(self.annotated_frame, f'Target: {t.target_name()}, Distance: {t.approx_distance():.2f}, Attack Angle: {t.attack_angle()}', (10, 90),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)

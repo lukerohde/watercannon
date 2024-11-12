@@ -13,8 +13,11 @@ servo1 = kit.servo[0]
 servo2 = kit.servo[1]
     
 # Set pulse width range for servos (in microseconds)
-servo1.set_pulse_width_range(550, 2600)  # 0.5ms to 2.5ms
-servo2.set_pulse_width_range(550, 2600)
+# servo1.set_pulse_width_range(550, 2650)  # 0.5ms to 2.5ms
+# servo2.set_pulse_width_range(550, 2650)
+servo1.set_pulse_width_range(530, 2630)  # 0.5ms to 2.5ms
+servo2.set_pulse_width_range(580, 2680)
+
 
 # Initialize the relay on GPIO pin 17
 relay = OutputDevice(17)
@@ -47,13 +50,13 @@ def move_servo1_right():
 def move_servo2_up():
     global servo2_angle
     servo2_angle = min(180, servo2_angle + 10)
-    servo2.angle = servo2_angle
+    servo2.angle = 180 - servo2_angle
     print(f"Servo2 moved up to {servo2_angle} degrees")
 
 def move_servo2_down():
     global servo2_angle
     servo2_angle = max(0, servo2_angle - 10)
-    servo2.angle = servo2_angle
+    servo2.angle = 180 - servo2_angle
     print(f"Servo2 moved down to {servo2_angle} degrees")
 
 def getch():

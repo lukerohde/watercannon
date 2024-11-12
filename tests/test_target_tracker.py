@@ -117,9 +117,9 @@ class TargetTrackerTestCase(unittest.TestCase):
         tracker = TargetTracker()
         tracker._frame_width = self.frame_width
         tracker._frame_height = self.frame_height
-        tracker.x1, tracker.y1, tracker.x2, tracker.y2 = 0, 0, 99, 99
+        tracker.x1, tracker.y1, tracker.x2, tracker.y2, tracker.width, tracker.height = 0, 0, 99, 99, 99, 99
         self.assertFalse(tracker._close_enough())
-        tracker.x1, tracker.y1, tracker.x2, tracker.y2 = 0, 0, 200, 200
+        tracker.x1, tracker.y1, tracker.x2, tracker.y2, tracker.width, tracker.height = 0, 0, 200, 200, 200, 200
         self.assertTrue(tracker._close_enough())
 
     def test_end_fire_event(self):

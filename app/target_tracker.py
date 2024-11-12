@@ -12,8 +12,8 @@ class TargetTracker:
         # Tracking configuration
         self._fov_horizontal = fov_horizontal
         self._fov_vertical = fov_vertical
-        self._frame_height = None
-        self._frame_width = None
+        self._frame_width = 640  # Default
+        self._frame_height = 480  # Default
         self._detections = None
 
         # Firing configuration
@@ -24,6 +24,16 @@ class TargetTracker:
         self._max_fire_time = 1
         self._cool_down_till = time.time()
         self._target_size_in_range = 0.1
+        self._target_width = 300
+        self._target_height = 400
+        self._attack_angles = {
+            1500: 0,
+            2000: 100,
+            2600: 110,
+            3100: 120,
+            3500: 130,
+            3600: 140
+        }
 
         # Public attributes
         self.target = None
@@ -32,6 +42,8 @@ class TargetTracker:
         self.dy = 0
         self.target_x = 0
         self.target_y = 0
+        self.width = None
+        self.height = None
         self.x1 = None
         self.x2 = None
         self.y1 = None
@@ -48,11 +60,24 @@ class TargetTracker:
 
         self.target = self._find_closest_target()
         if self.target:
+            self._set_dimensions()
             self._calculate_angles()
             self._should_i_fire()
             self._log_attack()
         else:
             self._end_fire_event()
+
+    def nothing_detected(self):
+        self._end_fire_event()
+
+    def _set_dimensions(self):
+        box = self.target['box']
+        self.x1, self.y1, self.x2, self.y2 = box['x1'], box['y1'], box['x2'], box['y2']
+        self.width = abs(self.x2 - self.x1)
+        self.height = abs(self.y2 - self.y1)
+        self.target_x = (self.x1 + self.x2) / 2
+        self.target_y = (self.y1 + self.y2) / 2
+            
 
     def _find_closest_target(self):
         """
@@ -78,18 +103,11 @@ class TargetTracker:
         """
         Calculate the angle offsets for the target box.
         """
-        box = self.target['box']
-        self.x1, self.y1, self.x2, self.y2 = box['x1'], box['y1'], box['x2'], box['y2']
-
         # Aim directly at the target
-        self.target_x = (self.x1 + self.x2) / 2
-        self.target_y = (self.y1 + self.y2) / 2
-
         current_x = self._frame_width / 2
         current_y = self._frame_height / 2
         offset_x = current_x - self.target_x
         offset_y = current_y - self.target_y
-
         self.dx = self._calculate_angle(offset_x, self._frame_width, self._fov_horizontal)
         self.dy = self._calculate_angle(offset_y, self._frame_height, self._fov_vertical)
 
@@ -104,6 +122,30 @@ class TargetTracker:
         Calculate the angle offset from the center.
         """
         return (offset / frame_dimension) * (fov / 2)
+
+    def approx_distance(self):
+        """
+        Approximate distance based upon expected size
+        """
+        x_dist = (.94 * self._target_width) / (self.width / self._frame_width) - 4.39
+        y_dist = (.94 * self._target_height) / (self.height / self._frame_height) - 4.39
+        return (x_dist + y_dist) / 2
+
+    def attack_angle(self):
+        """
+        Returns the tilt angle for a calculated distance using the lookup table.
+        Returns None if the distance exceeds the maximum range.
+        """
+        distance = self.approx_distance()
+        distances = np.array(sorted(self._attack_angles.keys()))
+        tilt_angles = np.array([self._attack_angles[d] for d in distances])
+
+        if distance < distances[0]:
+            return 0.0
+        elif distance > distances[-1]:
+            return None
+
+        return np.interp(distance, distances, tilt_angles)
 
     def _start_fire_event(self):
         if not self.fire:
@@ -122,20 +164,20 @@ class TargetTracker:
             self._fire_start_time = None
 
     def _close_enough(self):
-        target_width = abs(self.x2 - self.x1)
-        target_height = abs(self.y2 - self.y1)
-        percent_width = target_width / self._frame_width
-        percent_height = target_height / self._frame_height
-        if percent_width >= self._target_size_in_range or percent_height >= self._target_size_in_range:
-            return True
-        else:
+        if self.attack_angle() is None: 
             return False
+        else:
+            return True
 
     def _fire_duration(self):
         return time.time() - self._fire_start_time if self._fire_start_time else 0
 
     def _on_target(self):
-        return abs(self.dx) < self._activation_threshold_angle and abs(self.dy) < self._activation_threshold_angle
+        current_x = self._frame_width / 2
+        current_y = self._frame_height / 2
+        
+        return self.x1 < current_x and self.x2 > current_x and current_y < self.y2 # in the horizontal bounding box, and above the base of the target
+        #return abs(self.dx) < self._activation_threshold_angle and abs(self.dy) < self._activation_threshold_angle
 
     def _permitted_to_fire(self):
         if self._fire_duration() > self._max_fire_time:
@@ -153,14 +195,17 @@ class TargetTracker:
     def _person_detected(self):
         return False
 
+    def target_name(self):
+        return self.target.get('name', 'Unknown Target')
+
     def _log_attack(self):
-        target_name = self.target['name']
+        target_name = self.target_name()
         if self.fire:
-            self.attack_message = f'Firing on {target_name} at dx: {self.dx}, dy: {self.dy}'
+            self.attack_message = f'Firing on {target_name} at dx: {self.dx}, dy: {self.dy}, distance: {self.approx_distance()}, angle: {self.attack_angle()}, width: {self.width}, height: {self.height}'
         elif not self._close_enough():
-            self.attack_message = f'{target_name} out of range at dx: {self.dx}, dy: {self.dy}'
+            self.attack_message = f'{target_name} out of range at dx: {self.dx}, dy: {self.dy}, distance: {self.approx_distance()}, angle: {self.attack_angle()}, width: {self.width}, height: {self.height}'
         else:
-            self.attack_message = f'Targeting {target_name} at dx: {self.dx}, dy: {self.dy}'
+            self.attack_message = f'Targeting {target_name} at dx: {self.dx}, dy: {self.dy}, distance: {self.approx_distance()}, angle: {self.attack_angle()}, width: {self.width}, height: {self.height}'
 
         self._log(self.attack_message)
 

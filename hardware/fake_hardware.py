@@ -20,6 +20,7 @@ class FakeHardwareController(BaseHardwareController):
         """
         Simulate servo angle updates.
         """
+        pass
        
     def _toggle_relay(self):
         """
@@ -31,4 +32,5 @@ class FakeHardwareController(BaseHardwareController):
         """
         Simulate cleanup of resources.
         """
+        pass
        

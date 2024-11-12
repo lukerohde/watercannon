@@ -15,11 +15,10 @@ class PiHardwareServoKitController(BaseHardwareController):
         self._kit = ServoKit(channels=16)
         self._pan_servo = self._kit.servo[0]
         self._tilt_servo = self._kit.servo[1]
-        self._pan_servo.set_pulse_width_range(550, 2600)  # 0.5ms to 2.5ms
-        self._tilt_servo.set_pulse_width_range(550, 2600)
-        self._pan_servo.angle = self._pan_angle
-        self._tilt_servo.angle = self._tilt_angle
-
+        self._pan_servo.set_pulse_width_range(530, 2630)  # 0.5ms to 2.5ms
+        self._tilt_servo.set_pulse_width_range(580, 2680)
+        self._update_servos()
+        
         self._solenoid_pin = 17
         self._solenoid_relay = OutputDevice(self._solenoid_pin)
         self._solenoid_relay.toggle()
@@ -32,7 +31,7 @@ class PiHardwareServoKitController(BaseHardwareController):
         Update the current angles based on delta.
         """
         self._pan_servo.angle = self._pan_angle
-        self._tilt_servo.angle = self._tilt_angle
+        self._tilt_servo.angle = 180 - self._tilt_angle
 
     def _toggle_relay(self):
         self._solenoid_relay.toggle()

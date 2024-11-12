@@ -75,15 +75,20 @@ class BaseHardwareController(ABC):
             
             #self._smooth_pan(self._pan_angle + angle_x, self._tilt_angle + angle_y, loop_time)
             self._stop_smooth_pan()
-            self._set_pan_angle(self._pan_angle + tracker.dx)
-            self._set_tilt_angle(self._tilt_angle + tracker.dy)
-            self._update_servos() 
             
+            pan_angle = self._pan_angle + tracker.dx
+            tilt_angle = self._tilt_angle + tracker.dy
             if tracker.fire: 
-                # TBC Consider stop moving and shoot
                 self.activate_solenoid()
+            
+                if tracker.attack_angle() and tracker.attack_angle() > 0: 
+                    tilt_angle = tracker.attack_angle()
             else:
                 self.deactivate_solenoid()
+
+            self._set_pan_angle(pan_angle)
+            self._set_tilt_angle(tilt_angle)
+            self._update_servos() 
 
     def patrol(self):
         self.deactivate_solenoid()

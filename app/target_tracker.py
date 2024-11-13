@@ -17,17 +17,16 @@ class TargetTracker:
         self._detections = None
 
         # Firing configuration
-        self._activation_threshold_angle = 2
+        # self._activation_threshold_angle = 2
         self._firing_events = []
         self._fire_start_time = None
         self._cool_down_time = 3
         self._max_fire_time = 1
         self._cool_down_till = time.time()
-        self._target_size_in_range = 0.1
-        self._target_width = 300
-        self._target_height = 400
-        self._attack_angles = {
-            1500: 0,
+        self._target_width = 350 #mm used to estimate distance
+        self._target_height = 450 #mm
+        # distances and angles
+        self._attack_angles = { 
             2000: 100,
             2600: 110,
             3100: 120,
@@ -42,8 +41,8 @@ class TargetTracker:
         self.dy = 0
         self.target_x = 0
         self.target_y = 0
-        self.width = None
-        self.height = None
+        self.width = None # px 
+        self.height = None # px
         self.x1 = None
         self.x2 = None
         self.y1 = None
@@ -58,9 +57,9 @@ class TargetTracker:
         self._frame_height = frame_height
         self._detections = detections
 
-        self.target = self._find_closest_target()
+        self.target = self._find_closest_target() # perhaps this should be in self._find_closest_target
         if self.target:
-            self._set_dimensions()
+            self._set_dimensions() # perhaps this should be in self._find_closest_target (make testing easier)
             self._calculate_angles()
             self._should_i_fire()
             self._log_attack()
@@ -126,11 +125,14 @@ class TargetTracker:
     def approx_distance(self):
         """
         Approximate distance based upon expected size
-        """
-        x_dist = (.94 * self._target_width) / (self.width / self._frame_width) - 4.39
-        y_dist = (.94 * self._target_height) / (self.height / self._frame_height) - 4.39
-        return (x_dist + y_dist) / 2
 
+        distance = real_world_size * frame_dimension / (size_in_frame * 2 * tan(FOV * 2))
+        However, I found the values .94 and 430 empirically - this worked better
+        """
+        x_dist = (.94 * self._target_width) / (self.width / self._frame_width) - 430
+        y_dist = (.94 * self._target_height) / (self.height / self._frame_height) - 430
+        return (x_dist + y_dist) / 2
+ 
     def attack_angle(self):
         """
         Returns the tilt angle for a calculated distance using the lookup table.
@@ -141,7 +143,7 @@ class TargetTracker:
         tilt_angles = np.array([self._attack_angles[d] for d in distances])
 
         if distance < distances[0]:
-            return 0.0
+            return 0
         elif distance > distances[-1]:
             return None
 

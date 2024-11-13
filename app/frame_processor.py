@@ -38,8 +38,7 @@ class FrameProcessor:
                 self._hardware_controller.process_signals(self._target_tracker)
                 self.update_frame()
             else:
-                self._target_tracker.nothing_detected()
-                target_data = None  # No target detected
+                self._target_tracker.nothing_detected() # deactivates fire event
                 self._hardware_controller.patrol()
             
         else:

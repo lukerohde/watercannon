@@ -96,12 +96,12 @@ class FlaskAppTestCase(unittest.TestCase):
                 self.assertIsNotNone(image)
 
 
-                # Save the received image to disk for inspection
-                cv2.imwrite('received_image.png', image)
+                # # Save the received image to disk for inspection
+                # cv2.imwrite('received_image.png', image)
 
-                # Save the fake frame to disk for inspection
-                fake_image = FakeCamera.fake_frame()
-                cv2.imwrite('fake_image.png', fake_image)
+                # # Save the fake frame to disk for inspection
+                # fake_image = FakeCamera.fake_frame()
+                # cv2.imwrite('fake_image.png', fake_image)
 
                 # Verify that the image matches the fake frame
                 #self.assertTrue(np.array_equal(image, FakeCamera.fake_frame()))

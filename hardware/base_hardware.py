@@ -53,7 +53,7 @@ class BaseHardwareController(ABC):
 
         self._pan_angle = self._scan_angles[self._scan_target]['pan']
         self._tilt_angle = self._scan_angles[self._scan_target]['tilt']
-        self._tilt = None
+        self._tilt_backup_angle = None
                 
         # Smoothing stuff
         self._smooth_steps = 30
@@ -83,8 +83,8 @@ class BaseHardwareController(ABC):
                 self.activate_solenoid()
             
                 if tracker.attack_angle() and tracker.attack_angle() > 90: 
-                    if self._tilt == None:
-                        self._tilt = self._tilt_angle # backup tilt angle prior to tilting up to fire
+                    if self._tilt_backup_angle == None:
+                        self._tilt_backup_angle = self._tilt_angle # backup tilt angle prior to tilting up to fire
                     tilt_angle = tracker.attack_angle()
             else:
                 self.deactivate_solenoid()
@@ -97,10 +97,10 @@ class BaseHardwareController(ABC):
         self.deactivate_solenoid()
 
         # after tilting up to fire, and loosing track of the target, restore original angle
-        if self._tilt: 
-            self._set_tilt_angle(self._tilt)
+        if self._tilt_backup_angle: 
+            self._set_tilt_angle(self._tilt_backup_angle)
             self._update_servos()
-            self._tilt = None
+            self._tilt_backup_angle = None
                 
         if time.time() - self._last_tracking > self._tracking_pause: # wait 5 after being on target
             if time.time() - self._last_scan > self._scan_interval: # wait x before moving to next scan position

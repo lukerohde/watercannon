@@ -15,6 +15,8 @@ class TargetTracker:
         self._frame_width = 640  # Default
         self._frame_height = 480  # Default
         self._detections = None
+        self._aversion_detected_timeout = 5 # seconds
+        self._aversion_detected_time = time.time() - self._aversion_detected_timeout # set elapsed
 
         # Firing configuration
         # self._activation_threshold_angle = 2
@@ -65,6 +67,15 @@ class TargetTracker:
             self._log_attack()
         else:
             self._end_fire_event()
+
+    def process_aversions(self, aversions):
+        aversions_names = [ item['name'] for item in aversions ]
+
+        if aversions_names:
+            self._aversions = aversions_names
+            self._aversion_detected_time = time.time()
+            
+
 
     def nothing_detected(self):
         self._end_fire_event()
@@ -189,13 +200,17 @@ class TargetTracker:
         if time.time() < self._cool_down_till:
             return False
 
-        if self._person_detected():
+        if self._aversion_detected():
             return False
         
         return True
 
-    def _person_detected(self):
+    def _aversion_detected(self):
+        if time.time() < self._aversion_detected_time + self._aversion_detected_timeout:
+            return True
+
         return False
+        
 
     def target_name(self):
         return self.target.get('name', 'Unknown Target')
@@ -204,6 +219,8 @@ class TargetTracker:
         target_name = self.target_name()
         if self.fire:
             self.attack_message = f'Firing on {target_name} at dx: {self.dx}, dy: {self.dy}, distance: {self.approx_distance()}, angle: {self.attack_angle()}, width: {self.width}, height: {self.height}'
+        elif self._aversions:
+            self.attack_message = f'{self._aversions} detected.  Avoiding firing on {target_name} at dx: {self.dx}, dy: {self.dy}, distance: {self.approx_distance()}, angle: {self.attack_angle()}, width: {self.width}, height: {self.height}'
         elif not self._close_enough():
             self.attack_message = f'{target_name} out of range at dx: {self.dx}, dy: {self.dy}, distance: {self.approx_distance()}, angle: {self.attack_angle()}, width: {self.width}, height: {self.height}'
         else:

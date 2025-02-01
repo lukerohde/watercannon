@@ -7,3 +7,6 @@ watchdog
 gpiozero
 rpi-lgpio
 adafruit-circuitpython-servokit
+loguru
+pillow
+setproctitle

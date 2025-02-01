@@ -1,8 +1,9 @@
-# camera/fake_camera.py
+#!/usr/bin/env python3
 
 import numpy as np
 from .base_camera import BaseCamera
 import cv2
+import os
 
 class FakeCamera(BaseCamera):
     """
@@ -13,22 +14,14 @@ class FakeCamera(BaseCamera):
         """
         Class helper method used for testing
         """
-        #return np.zeros((480, 640, 3), dtype=np.uint8)
-        image_path = 'tests/chicken_missing.jpg'
+        # Get absolute path to test image
+        image_path = os.path.join(os.path.dirname(__file__), '..', 'tests', 'chicken_missing.jpg')
         image_data = cv2.imread(image_path)
+        if image_data is None:
+            # If image not found, return a test pattern
+            height, width = 480, 640
+            image_data = np.random.randint(100, 256, (height, width, 3), dtype=np.uint8)
         return image_data
-
-    # def fake_frame():
-    #     """
-    #     Class helper method used for testing.
-    #     Generates a bright image with high standard deviation.
-    #     """
-    #     height, width = 480, 640
-    #     # Generate random pixel values between 200 and 255 to ensure brightness
-    #     image_data = np.random.randint(100, 256, (height, width, 3), dtype=np.uint8)
-    #     return image_data
-
-
 
     def __init__(self, frames=None):
         """
@@ -49,7 +42,10 @@ class FakeCamera(BaseCamera):
         """
         while self.index < len(self.frames):
             yield self.frames[self.index]
-            self.index += 1
+            self.index += 1  # Increment index to get next frame
+        
+        # Reset index for next iteration
+        self.index = 0
 
     def release(self):
         """

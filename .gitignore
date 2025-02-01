@@ -10,6 +10,7 @@ tmp
 # Distribution / packaging
 .Python
 venv/
+venv_hailo
 
 # Unit test / coverage reports
 htmlcov/

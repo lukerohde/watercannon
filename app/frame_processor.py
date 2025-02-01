@@ -29,14 +29,13 @@ class FrameProcessor:
         self._frame = frame
         if self.is_interesting():
             height, width = self._frame.shape[:2]
-            detections = self._detector.detect_targets(self._frame)
-            aversions = self._detector.detect_aversions(self._frame)
-            self.annotated_frame = detections['frame']
+            self.annotated_frame = self._detector.detection_objects(self._frame)
+            detections = self._detector.targets
+            aversions = self._detector.aversions
 
-            self._target_tracker.process_aversions(aversions['items'])
-            items = detections['items']
-            if items != []:
-                self._target_tracker.process_detections(items, width, height)
+            self._target_tracker.process_aversions(aversions)
+            if detections != []:
+                self._target_tracker.process_detections(detections, width, height)
                 self._hardware_controller.process_signals(self._target_tracker)
                 self.update_frame()
             else:

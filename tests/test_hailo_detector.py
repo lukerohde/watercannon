@@ -7,7 +7,7 @@ from pathlib import Path
 
 # Add the app directory to the path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from app.detector import HailoBasedDetector
+from app.detector import HailoDetector
 from camera.fake_camera import FakeCamera
 
 def test_hailo_detector():
@@ -19,7 +19,7 @@ def test_hailo_detector():
         
 
     # Initialize detector with bird and person classes
-    detector = HailoBasedDetector(
+    detector = HailoDetector(
         hef_path=model_path,
         target_classes=['bird'],
         avoid_classes=['person']
@@ -31,13 +31,14 @@ def test_hailo_detector():
     
     # Get a frame and detect
     frame = next(frame_gen)
-    results = detector.detect_objects(frame, ['bird'])
-    print(f"Found {len(results['items'])} birds in the image")
-    assert len(results['items']) == 2
+    annotated_frame = detector.detect_objects(frame)
+    targets = detector.targets
+    print(f"Found {len(targets)} birds in the image")
+    assert len(targets) == 2
 
     # Save annotated image
     output_path = "output_hailo.jpg"
-    cv2.imwrite(output_path, results['frame'])
+    cv2.imwrite(output_path, annotated_frame)
     print(f"Saved annotated image to {output_path}")
 
 if __name__ == "__main__":

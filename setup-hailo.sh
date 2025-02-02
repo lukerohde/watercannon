@@ -83,4 +83,4 @@ rm -rf "$TEMP_DIR"
 
 echo "Hailo setup completed successfully!"
 echo "To activate the Hailo environment in the future, run:"
-echo "source $HAILO_VENV/bin/activate"
+echo "source $HAILO_VENV/bin/activate && python start.py"

@@ -3,12 +3,14 @@ import numpy as np
 import cv2
 import queue
 from functools import partial
+import os
 
 class HailoInference:
     def __init__(self, hef_path, threshold=0.5, **kwargs):
         #self.input_queue = queue.Queue()
         self.output_queue = queue.Queue()
         self._threshold = threshold
+        os.environ['HAILORT_LOGGER_PATH'] = 'NONE'
         
         try:
             from hailo_platform import HEF, VDevice, FormatType, HailoSchedulingAlgorithm
@@ -27,6 +29,9 @@ class HailoInference:
     
         with open('coco.txt', 'r') as f:
             self.coco_labels = [line.strip() for line in f.readlines()]
+
+        
+
 
     def callback(
         self, completion_info, bindings_list: list, input_batch: list,

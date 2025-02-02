@@ -5,7 +5,6 @@ from libcamera import Transform
 import numpy as np
 import cv2
 from .base_camera import BaseCamera
-import ipdb
 
 class PiCamera(BaseCamera):
     """

@@ -1,7 +1,6 @@
 # frame_processor.py
 
 import cv2
-import ipdb
 import numpy as np
 import time
 
@@ -29,7 +28,7 @@ class FrameProcessor:
         self._frame = frame
         if self.is_interesting():
             height, width = self._frame.shape[:2]
-            self.annotated_frame = self._detector.detection_objects(self._frame)
+            self.annotated_frame = self._detector.detect_objects(self._frame)
             detections = self._detector.targets
             aversions = self._detector.aversions
 

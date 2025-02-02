@@ -15,6 +15,7 @@ class TargetTracker:
         self._frame_width = 640  # Default
         self._frame_height = 480  # Default
         self._detections = None
+        self._aversions = []
         self._aversion_detected_timeout = 5 # seconds
         self._aversion_detected_time = time.time() - self._aversion_detected_timeout # set elapsed
 

@@ -19,7 +19,7 @@ class TargetTracker:
         self._aversion_detected_time = time.time() - self._aversion_detected_timeout # set elapsed
 
         # Firing configuration
-        # self._activation_threshold_angle = 2
+        self._activation_threshold_angle = 2
         self._firing_events = []
         self._fire_start_time = None
         self._cool_down_time = 3
@@ -189,7 +189,8 @@ class TargetTracker:
         current_x = self._frame_width / 2
         current_y = self._frame_height / 2
         
-        return self.x1 < current_x and self.x2 > current_x and current_y < self.y2 # in the horizontal bounding box, and above the base of the target
+        return abs(self.dx) < self._activation_threshold_angle and current_y < self.y2 # on target horizontally, and above the base of the target - it was too twitch before
+        #return self.x1 < current_x and self.x2 > current_x and current_y < self.y2 # in the horizontal bounding box, and above the base of the target
         #return abs(self.dx) < self._activation_threshold_angle and abs(self.dy) < self._activation_threshold_angle
 
     def _permitted_to_fire(self):

@@ -11,6 +11,7 @@ tmp
 .Python
 venv/
 venv_hailo
+output_hailo.jpg
 
 # Unit test / coverage reports
 htmlcov/

@@ -5,6 +5,7 @@ from libcamera import Transform
 import numpy as np
 import cv2
 from .base_camera import BaseCamera
+import time
 
 class PiCamera(BaseCamera):
     """
@@ -54,12 +55,17 @@ class PiCamera(BaseCamera):
         Generator that yields frames from the camera.
         """
         frame_count = 0
+        t = time.time()
         while True:
             # Capture a frame as a NumPy array
             frame = self.picam2.capture_array()
 
-            # Print frame count on the same line
-            print(f"Frame count: {frame_count}", end='\r', flush=True)
+            # Print frame rate on the same line
+            if time.time() - t >= 5:
+                print(f"FPS: {frame_count/5}", end='\r', flush=True)
+                t = time.time()
+                frame_count = 0
+            
             frame_count += 1
 
             yield frame

@@ -126,7 +126,10 @@ def main():
     # Initialize dependencies
     camera = get_camera()
     hardware_controller = get_hardware_controller()
-    detector = HailoDetector(hef_path='yolov8s_h8l.hef', threshold=0.5, target_classes=['cow', 'bird', 'cat', 'dog'], avoid_classes=['person'])
+    if HailoDetector.is_ai_hat_installed() and not os.environ.get('USE_CPU'):
+        detector = HailoDetector(hef_path=os.environ.get('HEF_PATH', 'yolov8m.hef'), threshold=0.5, target_classes=['cow', 'bird', 'cat', 'dog'], avoid_classes=['person'])
+    else:
+        detector = CPUDetector(threshold=0.5, target_classes=['cow', 'bird', 'cat', 'dog'], avoid_classes=['person'])
     target_tracker = TargetTracker(fov_horizontal=75, fov_vertical=66)
     frame_processor = FrameProcessor(detector, target_tracker, hardware_controller)
     temp_monitor = TemperatureMonitor()

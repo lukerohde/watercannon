@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from app.hailo_inference import HailoInference
+import json
 
 class BaseDetector:
     """
@@ -54,6 +55,15 @@ class HailoDetector(BaseDetector):
         self.hef_path = hef_path
         self.model = HailoInference(hef_path, threshold=threshold)
 
+    @classmethod
+    def is_ai_hat_installed(cls):
+        try:
+            from hailo_platform import Device
+            Device.scan()
+            return True
+        except ImportError:
+            return False
+    
     def detect_objects(self, frame):
         
         annotated_frame, detections = self.model.infer(frame)

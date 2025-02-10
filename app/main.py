@@ -126,7 +126,7 @@ def main():
     # Initialize dependencies
     camera = get_camera()
     hardware_controller = get_hardware_controller()
-    target_classes = ['cow', 'bird', 'cat', 'dog', 'sports ball']
+    target_classes = ['cow', 'bird', 'cat', 'dog']
     avoid_classes = ['person']
     if HailoDetector.is_ai_hat_installed() and not os.environ.get('USE_CPU'):
         detector = HailoDetector(hef_path=os.environ.get('HEF_PATH', 'yolov8m.hef'), threshold=0.5, target_classes=target_classes, avoid_classes=avoid_classes)
